@@ -18,7 +18,8 @@ LEGAL_NOTE = (
     "basis may violate privacy laws (GDPR, KVKK, CFAA and similar)."
 )
 
-KIND_TITLES = {"phone": "Phone report", "image": "Image report", "username": "Username report", "email": "Email report", "domain": "Domain / IP report"}
+KIND_TITLES = {"phone": "Phone report", "image": "Image report", "username": "Username report", "email": "Email report", "domain": "Domain / IP report",
+                "github": "GitHub report", "me": "Privacy self-audit", "password": "Password check"}
 
 
 class ReportRefused(ValueError):

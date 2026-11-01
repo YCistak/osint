@@ -17,7 +17,8 @@ LEGAL = (
     "privacy laws (GDPR, KVKK, CFAA and similar)."
 )
 TITLES = {"phone": "Phone report", "image": "Image report", "username": "Username report",
-          "email": "Email report", "domain": "Domain / IP report"}
+          "email": "Email report", "domain": "Domain / IP report",
+          "github": "GitHub report", "me": "Privacy self-audit", "password": "Password check"}
 
 CSS = """
 :root{color-scheme:dark;--bg:#0d1117;--card:#161b22;--line:#30363d;--fg:#e6edf3;--dim:#8b949e;--acc:#58a6ff;--ok:#3fb950;--warn:#d29922}
