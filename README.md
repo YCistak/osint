@@ -71,13 +71,16 @@ $ osint        # clears the terminal first, then shows the banner and the menu
 ██║   ██║╚════██║██║██║╚██╗██║   ██║
 ╚██████╔╝███████║██║██║ ╚████║   ██║
  ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝   ╚═╝
-v0.3 · 500 sites · type 'help'
+v0.4 · 500 sites · type 'help'
 
   [1]   Username   search a username on 500 sites
   [2]   Email      breaches, accounts, profiles, mail server
   [3]   Domain/IP  whois, DNS, subdomains, geolocation
   [4]   Phone      country, carrier, line type
-  [5]   Image      EXIF metadata & GPS
+  [5]   Image      EXIF, GPS, reverse image search
+  [6]   GitHub     profile, repos, activity, emails in commits
+  [7]   Me         privacy self-audit with a 0-100 score
+  [8]   Password   check a password against known breaches
   [0]   Exit
 
 osint ❯ 1
@@ -93,11 +96,17 @@ Inside a category: the target scans, `save [path] [--html]`, `show all|found`, `
 
 | Command (works from the main prompt too) | What it does |
 |---|---|
-| `username <name>` | Search a username on all sites, with profile details |
+| `username <name> [-v]` | Search a username on all sites, with profile details; `-v` adds variations |
 | `email <address> [--unsafe] [--all-modules]` | Breaches, registered accounts, profiles, mail server; offers to scan the discovered usernames |
 | `domain <domain\|ip>` | Whois, DNS, subdomains (domain) or reverse DNS and geolocation (IP) |
 | `phone <number> [--region XX]` | Offline phone number analysis |
-| `image <path>` | EXIF metadata and GPS of a local image (`~` is expanded) |
+| `image <path\|url>` | EXIF and GPS of a local image (`~` is expanded) or an image URL, plus reverse image search links |
+| `github <username>` | Deep GitHub profile, repositories, activity and exposed commit emails |
+| `me <username> <email> <phone> [--password]` | Privacy self-audit; identifiers are recognised by shape, any subset works; `me` then `ask` prompts for each |
+| `password` | Enter the category and type a password at the hidden prompt (never on the command line) |
+| `history [show <id>\|diff <id> <id>\|clear]` | Stored scan summaries and what changed between scans |
+| `variations on\|off` | Also search likely variants of usernames (or add `-v` to one scan) |
+| `proxy <url>\|tor\|off` | Route HTTP traffic through a proxy or Tor; without an argument it shows the state |
 | `save [path] [--html]` | Save the last result: Markdown by default, HTML with `--html` or a `.html` path (default folder `./reports/`) |
 | `show all\|found` | Re-display the last result; `all` also lists not-found and unknown sites |
 | `help`, `clear` | Help text, redraw the current screen |
