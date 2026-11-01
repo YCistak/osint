@@ -19,9 +19,13 @@ class Hit:
     url: str
     status: str  # FOUND | MISSING | UNKNOWN
     detail: str = ""
+    profile: dict = field(default_factory=dict, hash=False, compare=False)
 
     def to_dict(self) -> dict:
-        return {"name": self.name, "url": self.url, "status": self.status, "detail": self.detail}
+        d = {"name": self.name, "url": self.url, "status": self.status, "detail": self.detail}
+        if self.profile:
+            d["profile"] = dict(self.profile)
+        return d
 
 
 @dataclass

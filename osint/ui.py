@@ -44,6 +44,11 @@ def hit_line(hit: Hit) -> Text:
     return line
 
 
+def profile_lines(hit: Hit) -> list[Text]:
+    """Indented detail lines (name, bio, location ...) under a found hit."""
+    return [Text.assemble(("      ", ""), (f"{k}: ", "dim"), (v, "")) for k, v in hit.profile.items()]
+
+
 class ScanProgress:
     """One live progress line; found hits print above it as they arrive.
 
@@ -89,6 +94,8 @@ class ScanProgress:
         )
         if visible:
             self._progress.console.print(hit_line(hit))
+            for line in profile_lines(hit):
+                self._progress.console.print(line)
         self._progress.update(self._task, completed=done, total=total, found=self.found)
 
 
@@ -137,6 +144,8 @@ def render_result(console: Console, result: ScanResult, show: str = "found",
             for hit in sorted(result.hits, key=lambda h: (h.status != FOUND, h.name.lower())):
                 if hit.status in wanted:
                     console.print(hit_line(hit))
+                    for line in profile_lines(hit):
+                        console.print(line)
         console.print()
         info(
             console,

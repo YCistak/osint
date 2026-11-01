@@ -85,6 +85,12 @@ def to_markdown(result: ScanResult, now: datetime | None = None) -> str:
         if found:
             lines += ["| Site | URL |", "|---|---|"]
             lines += [f"| {_cell(h.name)} | {_cell(h.url)} |" for h in found]
+            detailed = [h for h in found if h.profile]
+            if detailed:
+                lines += ["", "### Profile details", ""]
+                for h in detailed:
+                    lines.append(f"- **{h.name}**")
+                    lines += [f"  - {k}: {_cell(v)}" for k, v in h.profile.items()]
         else:
             lines.append("No accounts found.")
         lines += ["", "## Unknown (check manually)", ""]

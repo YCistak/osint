@@ -17,6 +17,7 @@ from collections.abc import Callable
 
 import httpx
 
+from . import profiles
 from .models import FOUND, MISSING, UNKNOWN, Hit
 from .sites import Site
 
@@ -74,7 +75,8 @@ def classify(site: Site, status: int, body: str) -> tuple[str, str]:
 
 
 async def check_site(
-    client: httpx.AsyncClient, site: Site, username: str, retries: int = 1
+    client: httpx.AsyncClient, site: Site, username: str, retries: int = 1,
+    fetch_profiles: bool = True,
 ) -> Hit:
     """Check one site. Never raises."""
     profile = site.profile_url(username)
@@ -89,8 +91,13 @@ async def check_site(
                 headers={**site.headers} or None,
                 follow_redirects=follow,
             )
-            status, detail = classify(site, resp.status_code, resp.text[:MAX_BODY])
-            return Hit(site.name, profile, status, detail)
+            body = resp.text[:MAX_BODY]
+            status, detail = classify(site, resp.status_code, body)
+            details = {}
+            if status == FOUND and fetch_profiles:
+                details = await profiles.get_profile(
+                    client, site.name, username, resp.headers.get("content-type", ""), body)
+            return Hit(site.name, profile, status, detail, details)
         except httpx.TimeoutException:
             if attempt < retries:
                 attempt += 1
