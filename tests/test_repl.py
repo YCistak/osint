@@ -176,7 +176,7 @@ def test_plain_stdin_loop_processes_lines_until_eof(monkeypatch):
     code = repl.run(console, [Site("Demo", "https://demo.test/{username}")], banner=True)
     out = buf.getvalue()
     assert code == 0
-    assert "██████╗" in out and "v0.3 · 1 sites · type 'help'" in out
+    assert "██████╗" in out and "v0.4 · 1 sites · type 'help'" in out
     assert "osint ❯ help" in out and "unknown command 'frobnicate'" in out
 
 

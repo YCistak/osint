@@ -125,7 +125,7 @@ def test_help_and_version_via_subprocess():
     h = run_cli("--help")
     assert h.returncode == 0 and "username" in h.stdout and "--no-banner" in h.stdout and "--json" in h.stdout
     v = run_cli("--version")
-    assert v.stdout.strip() == "osint 0.3.0"
+    assert v.stdout.strip() == "osint 0.4.0"
 
 
 def test_repl_via_piped_stdin():
