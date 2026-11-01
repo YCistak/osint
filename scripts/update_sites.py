@@ -47,7 +47,7 @@ def usable(name: str, site: dict) -> bool:
     """True if our checker can evaluate this maigret entry."""
     if site.get("disabled"):
         return False
-    if not site.get("alexaRank") or "url" not in site:
+    if "alexaRank" not in site or "url" not in site:
         return False
     if set(site.get("tags", [])) & EXCLUDED_TAGS:
         return False
@@ -111,22 +111,32 @@ def with_engine(site: dict, engines: dict) -> dict:
     return {**template, **site}
 
 
-def build(data: dict, limit: int, blocked: set[str]) -> list[dict]:
+def build(data: dict, limit: int, blocked: set[str], fill_unranked: bool = True) -> list[dict]:
+    """Ranked sites first (best Alexa rank first); if that is fewer than ``limit``
+    and ``fill_unranked`` is set, top up with unranked stand-alone (non-engine)
+    sites in name order. Rank 0 in the output means "unranked"."""
     engines = data.get("engines", {})
-    merged = ((name, with_engine(s, engines)) for name, s in data["sites"].items())
-    candidates = [
-        (s["alexaRank"], name, s)
-        for name, s in merged
-        if name not in blocked and usable(name, s)
-    ]
-    candidates.sort(key=lambda t: (t[0], t[1].lower()))
-    return [convert(name, s) for _, name, s in candidates[:limit]]
+    ranked, unranked = [], []
+    for name, raw in data["sites"].items():
+        if name in blocked:
+            continue
+        merged = with_engine(raw, engines)
+        if usable(name, merged):
+            ranked.append((merged["alexaRank"], name, merged))
+        elif fill_unranked and not raw.get("alexaRank") and not raw.get("engine"):
+            probe = {**merged, "alexaRank": 1}
+            if usable(name, probe):
+                unranked.append((0, name, {**merged, "alexaRank": 0}))
+    ranked.sort(key=lambda t: (t[0], t[1].lower()))
+    unranked.sort(key=lambda t: t[1].lower())
+    return [convert(name, s) for _, name, s in (ranked + unranked)[:limit]]
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--input", help="read a local maigret data.json instead of downloading")
-    ap.add_argument("--limit", type=int, default=600, help="max sites to keep (default 600)")
+    ap.add_argument("--limit", type=int, default=500, help="max sites to keep (default 500)")
+    ap.add_argument("--no-fill", action="store_true", help="do not top up with unranked sites")
     ap.add_argument("--output", default=str(OUTPUT))
     args = ap.parse_args(argv)
 
@@ -136,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
         with urllib.request.urlopen(DATA_URL, timeout=60) as resp:
             raw = resp.read()
     data = json.loads(raw)  # data only, never executed
-    sites = build(data, args.limit, load_blocklist())
+    sites = build(data, args.limit, load_blocklist(), not args.no_fill)
     payload = {
         "source": "maigret data.json (MIT) https://github.com/soxoj/maigret",
         "generated": date.today().isoformat(),
