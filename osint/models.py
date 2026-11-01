@@ -45,6 +45,7 @@ class ScanResult:
     cancelled: bool = False
     usernames: list[str] = field(default_factory=list)  # usernames discovered (email scans)
     chained: list["ScanResult"] = field(default_factory=list)  # follow-up username scans
+    meta: dict = field(default_factory=dict)  # structured facts for scoring and history (not shown)
 
     def counts(self) -> dict[str, int]:
         out = {s: 0 for s in STATUSES}
@@ -63,6 +64,7 @@ class ScanResult:
             "notes": self.notes,
             **({"discovered_usernames": self.usernames} if self.usernames else {}),
             **({"chained": [c.to_dict() for c in self.chained]} if self.chained else {}),
+            **({"meta": self.meta} if self.meta else {}),
         }
 
 
