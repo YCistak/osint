@@ -133,3 +133,53 @@ def recommendations(f: Facts, now: datetime | None = None) -> list[str]:
     recs.append("Use a password manager with a unique, random password for every service.")
     seen: set[str] = set()
     return [r for r in recs if not (r in seen or seen.add(r))]
+
+
+# ---------------------------------------------------------------- facts from scan results
+
+def exposed_profile_fields(result) -> dict[str, list[str]]:
+    """Sensitive fields found in the profiles of a username scan, per site."""
+    from .models import FOUND
+
+    out: dict[str, list[str]] = {}
+    for h in result.hits:
+        if h.status != FOUND or not h.profile:
+            continue
+        got = []
+        for fld in SENSITIVE_FIELDS:
+            val = h.profile.get(fld, "")
+            if not val:
+                continue
+            if fld == "Name" and (" " not in val.strip() or val.strip().lower() == result.target.lower()):
+                continue  # a bare handle is not a real name
+            got.append(fld)
+        if got:
+            out[h.name] = got
+    return out
+
+
+def facts_from_username(result, f: Facts) -> None:
+    from .models import FOUND
+
+    f.username_accounts = sorted({h.name for h in result.hits if h.status == FOUND}, key=str.lower)
+    f.exposed_fields.update(exposed_profile_fields(result))
+
+
+def facts_from_email(result, f: Facts) -> None:
+    from .models import FOUND
+
+    f.email_accounts = sorted({h.name for h in result.hits if h.status == FOUND}, key=str.lower)
+    body = result.sections.get("Breaches") or {}
+    if body.get("type") == "table":
+        for row in body["rows"]:
+            f.breaches.append({"name": row[0], "year": row[1] if len(row) > 1 else "",
+                               "data": row[3] if len(row) > 3 else ""})
+    profiles = (result.sections.get("Profiles") or {}).get("items", {})
+    if any(k.startswith("Gravatar") for k in profiles):
+        f.email_profiles.append("Gravatar")
+    if "GitHub" in profiles:
+        f.email_profiles.append("GitHub")
+    f.phone_hints = sorted({h.name for h in result.hits if h.status == FOUND and "phone:" in h.detail}, key=str.lower)
+    gravatar_loc = profiles.get("Gravatar location")
+    if gravatar_loc:
+        f.exposed_fields.setdefault("Gravatar", []).append("Location")
