@@ -134,7 +134,7 @@ def cmd_show(s: Session, args: list[str]) -> None:
 
 
 def cmd_help(s: Session, args: list[str]) -> None:
-    s.console.print(HELP.format(sites=len(s.sites)))
+    s.console.print(HELP.format(sites=len(s.sites)), markup=False)
 
 
 def cmd_clear(s: Session, args: list[str]) -> None:
