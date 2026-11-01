@@ -11,7 +11,7 @@ import asyncio
 
 from rich.console import Console
 
-from . import domainscan, emailscan, username
+from . import domainscan, emailscan, username, variations
 from .models import FOUND, Hit, ScanResult, table
 from .sites import Site
 from .ui import ScanProgress, info
@@ -45,6 +45,54 @@ def run_username(
     except KeyboardInterrupt:
         result.cancelled = True
     result.hits = list(hits)
+    return result
+
+
+def merge_variation_hits(base: list[Hit], extra: list[tuple[str, list[Hit]]]) -> list[Hit]:
+    """Original hits plus FOUND hits of each variant, one entry per profile URL.
+
+    The same URL found twice (case-insensitive sites) is kept once; a found
+    variant hit gets ``variant: <name>`` in its detail.
+    """
+    seen = {h.url.lower() for h in base if h.status == FOUND}
+    merged = list(base)
+    for variant, hits in extra:
+        for h in hits:
+            if h.status != FOUND or h.url.lower() in seen:
+                continue
+            seen.add(h.url.lower())
+            merged.append(Hit(h.name, h.url, FOUND, f"variant: {variant}", h.profile))
+    return merged
+
+
+def run_username_variations(
+    name: str,
+    sites: list[Site],
+    console: Console,
+    *,
+    progress: bool = True,
+    names: list[str] | None = None,
+    **kwargs,
+) -> ScanResult:
+    """Scan ``name`` and its generated variants; show the variant list first."""
+    names = names if names is not None else variations.generate(name)
+    if progress:
+        if names:
+            info(console, f"variations ({len(names)}): " + ", ".join(names))
+        else:
+            info(console, "no variations could be generated for this name")
+    result = run_username(name, sites, console, progress=progress, **kwargs)
+    extra: list[tuple[str, list[Hit]]] = []
+    for variant in names:
+        if result.cancelled:
+            break
+        res = run_username(variant, sites, console, progress=progress, **kwargs)
+        extra.append((variant, res.hits))
+        result.cancelled = res.cancelled
+    result.hits = merge_variation_hits(result.hits, extra)
+    if names:
+        result.notes.append(f"Variations scanned: {', '.join(names)}. Found variant profiles are merged "
+                            "into the list above (duplicates by URL removed).")
     return result
 
 
