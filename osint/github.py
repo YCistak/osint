@@ -85,7 +85,7 @@ class Api:
 
 def is_noreply(email: str) -> bool:
     e = email.lower()
-    return e.endswith("@users.noreply.github.com") or e.endswith("@noreply.github.com")
+    return e.endswith(("@users.noreply.github.com", "@noreply.github.com")) or e == "noreply@github.com"
 
 
 def collect_event_emails(events: list) -> list[tuple[str, str, str]]:
