@@ -183,3 +183,89 @@ def facts_from_email(result, f: Facts) -> None:
     gravatar_loc = profiles.get("Gravatar location")
     if gravatar_loc:
         f.exposed_fields.setdefault("Gravatar", []).append("Location")
+
+
+# ---------------------------------------------------------------- result
+
+def _count_text(n: int, word: str) -> str:
+    return f"{n} {word}"
+
+
+def build_result(f: Facts, parts: dict, now: datetime | None = None) -> "ScanResult":
+    """The final audit result. ``parts`` holds the sub-scan results:
+    ``username``, ``email``, ``phone`` and ``github`` (any may be missing)."""
+    from .models import ScanResult, FOUND, kv, steps, table, text
+
+    label = " + ".join(x for x in (f.username, f.email, f.phone) if x) or "(nothing)"
+    res = ScanResult("me", label)
+    score, rows = compute_score(f, now)
+    verdict = label_for(score)
+
+    summary: dict[str, str] = {}
+    if f.username:
+        summary["Accounts (username)"] = f"{len(f.username_accounts)} found for '{f.username}'"
+    if f.email:
+        summary["Services (email)"] = f"{len(f.email_accounts)} registered with {f.email}"
+        if f.breaches:
+            dated = sorted((b for b in f.breaches if breach_year(b)), key=breach_year, reverse=True)
+            newest = f"{dated[0]['name']} ({breach_year(dated[0])})" if dated else "unknown date"
+            classes = sorted({c.strip() for b in f.breaches for c in str(b.get('data', '')).split(',') if c.strip()})
+            summary["Breaches"] = f"{len(f.breaches)}; newest: {newest}"
+            summary["Exposed data classes"] = ", ".join(classes[:12]) or "unknown"
+        elif "email" in parts and parts["email"].sections.get("Breaches", {}).get("type") == "text" \
+                and "Could not" in parts["email"].sections["Breaches"].get("text", ""):
+            summary["Breaches"] = "could not be checked (service unavailable)"
+        else:
+            summary["Breaches"] = "none known"
+    exposed = [f"{site}: {', '.join(flds)}" for site, flds in sorted(f.exposed_fields.items(), key=lambda kv: kv[0].lower())]
+    if f.username or f.email:
+        summary["Exposed profile fields"] = "; ".join(exposed) or "none found"
+    if f.git_emails:
+        summary["Emails in public git commits"] = ", ".join(f.git_emails[:3])
+    if f.phone:
+        ph = parts.get("phone")
+        info = (ph.sections.get("Number", {}).get("items", {}) if ph else {})
+        desc = ", ".join(x for x in (info.get("Country"), info.get("Carrier"), info.get("Line type")) if x)
+        hint = ("revealed by: " + ", ".join(f.phone_hints[:3])) if f.phone_hints else "no recovery hint found"
+        summary["Phone"] = f"{info.get('E.164', f.phone)} ({desc or 'unknown'}); {hint}"
+    if f.password_count is not None:
+        summary["Password check"] = (f"found {f.password_count:,} time(s) in breaches" if f.password_count
+                                     else "not found in known breaches")
+    res.sections["Summary"] = kv(summary)
+
+    body = table(["Factor", "Found", "Points"], rows)
+    body["summary"] = {"Privacy score": f"{score}/100 ({verdict})"}
+    body["footer"] = ("Start at 100 and subtract the points above (never below 0). 80-100 good, 50-79 fair, "
+                      "0-49 poor. Factors without input are not counted. The formula is in the README.")
+    res.sections["Privacy score"] = body
+    res.sections["Recommendations"] = steps(recommendations(f, now))
+
+    if "username" in parts:
+        found = [h for h in parts["username"].hits if h.status == FOUND]
+        t = table(["Site", "URL", "Exposed fields"],
+                  [[h.name, h.url, ", ".join(f.exposed_fields.get(h.name, [])) or "-"]
+                   for h in sorted(found, key=lambda h: h.name.lower())])
+        t["footer"] = f"{len(parts['username'].hits)} sites checked."
+        res.sections[f"Accounts for username '{f.username}'"] = t
+    if "email" in parts:
+        for title in ("Breaches", "Registered accounts", "Profiles", "Mail server"):
+            if title in parts["email"].sections:
+                res.sections[f"Email: {title}"] = parts["email"].sections[title]
+    if "phone" in parts:
+        res.sections["Phone: Number"] = parts["phone"].sections["Number"]
+    if "github" in parts:
+        for title in ("Profile", "Emails in public commits"):
+            if title in parts["github"].sections:
+                res.sections[f"GitHub: {title}"] = parts["github"].sections[title]
+    if not (f.username or f.email or f.phone):
+        res.sections["Summary"] = text("Nothing to check: give a username, an email address or a phone number.")
+
+    res.meta.update({
+        "score": score, "verdict": verdict,
+        "accounts": [f"username:{a}" for a in f.username_accounts] + [f"email:{a}" for a in f.email_accounts],
+        "breaches": [b["name"] for b in f.breaches],
+        "breakdown": [{"factor": r[0], "found": r[1], "points": int(r[2])} for r in rows],
+    })
+    for part in parts.values():
+        res.cancelled = res.cancelled or part.cancelled
+    return res
