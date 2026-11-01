@@ -1,6 +1,7 @@
 """One-shot CLI: argparse wiring, --json, --no-banner, --save, exit codes."""
 
 import json
+import re
 import subprocess
 import sys
 
@@ -136,3 +137,40 @@ def test_repl_via_piped_stdin():
 def test_repl_eof_exits_cleanly():
     r = run_cli("--no-banner", stdin="")
     assert r.returncode == 0 and "██████╗" not in r.stdout
+
+
+def pty_start_output() -> str:
+    """Run the interactive shell on a real pty (stdlib only), return what it printed before exiting."""
+    import os
+    import pty
+    import select
+    import time
+
+    pid, fd = pty.fork()
+    if pid == 0:
+        os.environ["TERM"] = "xterm"
+        os.execv(sys.executable, [sys.executable, "-m", "osint.cli"])
+    buf, deadline, sent = b"", time.time() + 20, False
+    while time.time() < deadline:
+        if select.select([fd], [], [], 0.3)[0]:
+            try:
+                chunk = os.read(fd, 65536)
+            except OSError:
+                break
+            if not chunk:
+                break
+            buf += chunk
+        if not sent and "❯".encode() in buf:
+            os.write(fd, b"exit\r")
+            sent = True
+    os.waitpid(pid, 0)
+    return buf.decode(errors="replace")
+
+
+def test_pty_start_clears_and_lists_commands_but_one_shot_does_not():
+    out = pty_start_output()
+    assert out.startswith("\x1b[H\x1b[2J\x1b[3J")
+    plain = re.sub(r"\x1b\[[0-9;?]*[A-Za-z]", "", out)
+    assert "██████╗" in plain and "username <name>" in plain and "domain <domain|ip>" in plain
+    one = run_cli("--help")  # one-shot paths never reach repl.run; no network needed
+    assert "\x1b[3J" not in one.stdout and "username <name>" not in one.stdout

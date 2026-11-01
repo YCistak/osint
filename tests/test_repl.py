@@ -183,3 +183,42 @@ def test_history_path_env_and_xdg(monkeypatch, tmp_path):
     monkeypatch.delenv("OSINT_HISTORY_FILE")
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
     assert repl.history_path() == tmp_path / "osint" / "history"
+
+
+# ---- start screen: clear + command list ----------------------------------
+
+def tty_console(buf):
+    return Console(file=buf, force_terminal=True, color_system=None, width=100, highlight=False)
+
+
+def test_command_list_shown_under_banner_and_in_help_share_rows():
+    buf = io.StringIO()
+    repl.print_commands(Console(file=buf, force_terminal=False, width=100), 500)
+    out = buf.getvalue()
+    for word in ["username <name>", "search a username on 500 sites", "email <address>", "domain <domain|ip>",
+                 "save [path]", "show all|found", "clear", "help / exit"]:
+        assert word in out
+    assert "│" not in out and "─" not in out  # borderless
+
+
+def test_clear_command_redraws_banner_and_commands_on_tty():
+    buf = io.StringIO()
+    s = repl.Session(tty_console(buf), [Site("Demo", "https://demo.test/{username}")])
+    repl.execute(s, "clear")
+    out = buf.getvalue()
+    assert out.startswith("\x1b[H\x1b[2J\x1b[3J")
+    assert "██████╗" in out and "username <name>" in out
+
+
+def test_run_clears_on_tty_but_not_when_banner_off_or_not_tty(monkeypatch):
+    monkeypatch.setattr("sys.stdin", io.StringIO(""))
+    sites = [Site("Demo", "https://demo.test/{username}")]
+    buf = io.StringIO()
+    repl.run(tty_console(buf), sites, banner=True)
+    assert buf.getvalue().startswith("\x1b[H\x1b[2J\x1b[3J") and "username <name>" in buf.getvalue()
+    buf = io.StringIO()
+    repl.run(tty_console(buf), sites, banner=False)
+    assert "\x1b[3J" not in buf.getvalue() and "username <name>" not in buf.getvalue()
+    buf = io.StringIO()
+    repl.run(Console(file=buf, force_terminal=False), sites, banner=True)
+    assert "\x1b[3J" not in buf.getvalue() and "username <name>" in buf.getvalue()
