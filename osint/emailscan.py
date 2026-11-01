@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 
 import httpx
 
+from .username import username_valid
 from .models import FOUND, MISSING, UNKNOWN, Hit, ScanResult, bullets, kv, table, text
 
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
@@ -273,8 +274,20 @@ class EmailState:
     skipped_modules: int = 0
     cancelled: bool = False
 
+    def discovered_usernames(self) -> list[str]:
+        """Usernames worth a follow-up search: GitHub login, Gravatar username, email local part."""
+        candidates = [u.get("login", "") for u in (self.github or [])]
+        candidates.append((self.gravatar or {}).get("Username", ""))
+        candidates.append(local_part(self.email))
+        out: list[str] = []
+        for c in candidates:
+            if c and username_valid(c) and c.lower() not in {o.lower() for o in out}:
+                out.append(c)
+        return out
+
     def to_result(self) -> ScanResult:
         res = ScanResult("email", self.email, cancelled=self.cancelled)
+        res.usernames = self.discovered_usernames()
         res.hits = list(self.accounts)
 
         # Breaches

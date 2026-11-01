@@ -12,7 +12,7 @@ import asyncio
 from rich.console import Console
 
 from . import domainscan, emailscan, username
-from .models import Hit, ScanResult
+from .models import FOUND, Hit, ScanResult, table
 from .sites import Site
 from .ui import ScanProgress, info
 
@@ -83,3 +83,30 @@ def run_domain(target: str, console: Console, *, progress: bool = True) -> ScanR
     except KeyboardInterrupt:
         result.cancelled = True
     return result
+
+
+def run_chain(
+    parent: ScanResult,
+    sites: list[Site],
+    console: Console,
+    *,
+    progress: bool = True,
+    names: list[str] | None = None,
+) -> list[ScanResult]:
+    """Username scans for the usernames an email scan discovered.
+
+    Each result is stored in ``parent.chained`` and as a ``Username scan: <name>``
+    section (so reports and the HTML page include it). Stops early on Ctrl-C.
+    """
+    results: list[ScanResult] = []
+    for name in names if names is not None else parent.usernames:
+        res = run_username(name, sites, console, progress=progress, print_hits=progress)
+        results.append(res)
+        found = sorted((h for h in res.hits if h.status == FOUND), key=lambda h: h.name.lower())
+        body = table(["Site", "URL"], [[h.name, h.url] for h in found])
+        body["footer"] = f"{len(res.hits)} sites checked, {len(found)} found."
+        parent.sections[f"Username scan: {name}"] = body
+        if res.cancelled:
+            break
+    parent.chained = results
+    return results

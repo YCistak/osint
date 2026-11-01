@@ -164,3 +164,20 @@ def render_result(console: Console, result: ScanResult, show: str = "found",
     for note in result.notes:
         console.print()
         info(console, note)
+
+
+def render_chain_summary(console: Console, results: list[ScanResult]) -> None:
+    """Combined overview after several chained username scans."""
+    console.print()
+    console.print(marker("info"), Text("Combined summary", style="bold"))
+    grid = Table(show_header=True, header_style="bold", box=None, pad_edge=False, padding=(0, 2))
+    grid.add_column("Username")
+    grid.add_column("Found", justify="right")
+    grid.add_column("Sites", overflow="fold")
+    total = 0
+    for r in results:
+        found = sorted((h.name for h in r.hits if h.status == FOUND), key=str.lower)
+        total += len(found)
+        grid.add_row(r.target, str(len(found)), ", ".join(found[:12]) + (" ..." if len(found) > 12 else ""))
+    console.print(grid)
+    info(console, f"{total} accounts found across {len(results)} usernames")

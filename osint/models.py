@@ -43,6 +43,8 @@ class ScanResult:
     sections: dict[str, dict] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
     cancelled: bool = False
+    usernames: list[str] = field(default_factory=list)  # usernames discovered (email scans)
+    chained: list["ScanResult"] = field(default_factory=list)  # follow-up username scans
 
     def counts(self) -> dict[str, int]:
         out = {s: 0 for s in STATUSES}
@@ -59,6 +61,8 @@ class ScanResult:
             "hits": [h.to_dict() for h in self.hits],
             "sections": self.sections,
             "notes": self.notes,
+            **({"discovered_usernames": self.usernames} if self.usernames else {}),
+            **({"chained": [c.to_dict() for c in self.chained]} if self.chained else {}),
         }
 
 

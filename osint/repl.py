@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import shlex
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -16,7 +17,7 @@ from . import domainscan, emailscan, report, runner, username
 from .banner import clear_screen, print_banner
 from .models import ScanResult
 from .sites import Site
-from .ui import error, info, render_result
+from .ui import error, info, render_chain_summary, render_result
 
 COMMANDS = ["username", "email", "domain", "save", "show", "help", "clear", "exit", "quit"]
 PROMPT = "osint ❯ "
@@ -75,6 +76,30 @@ class Session:
     last: ScanResult | None = None
     running: bool = True
     history: list[str] = field(default_factory=list)
+    ask: Callable[[str], str] = field(default=lambda prompt: ask_yes_no(prompt))
+
+
+def ask_yes_no(prompt: str) -> str:
+    """Read an answer from a real terminal; anything else (pipes, EOF) counts as 'no'."""
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        return "n"
+    try:
+        return input(prompt)
+    except (EOFError, KeyboardInterrupt):
+        return "n"
+
+
+def offer_chain(s: Session, result: ScanResult) -> None:
+    """After an email scan, offer to search the discovered usernames."""
+    if not result.usernames or result.cancelled:
+        return
+    s.console.print()
+    info(s.console, "usernames discovered: " + ", ".join(result.usernames))
+    answer = s.ask("Scan these usernames? [y/N] ").strip().lower()
+    if answer in ("y", "yes"):
+        results = runner.run_chain(result, s.sites, s.console)
+        if results:
+            render_chain_summary(s.console, results)
 
 
 def parse_line(line: str) -> tuple[str, list[str]]:
@@ -117,6 +142,7 @@ def cmd_email(s: Session, args: list[str]) -> None:
                               all_modules="--all-modules" in flags)
     s.last = result
     render_result(s.console, result)
+    offer_chain(s, result)
 
 
 def cmd_domain(s: Session, args: list[str]) -> None:

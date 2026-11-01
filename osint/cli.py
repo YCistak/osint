@@ -9,7 +9,7 @@ import sys
 from . import __version__, domainscan, emailscan, report, repl, runner, username
 from .banner import print_banner
 from .sites import SiteListError, load_sites
-from .ui import error, info, make_console, render_result
+from .ui import error, info, make_console, render_chain_summary, render_result
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -39,6 +39,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--unsafe", action="store_true",
                    help="include password-reset checks (may email the target)")
     p.add_argument("--all-modules", action="store_true", help="include known-dead holehe modules")
+    p.add_argument("--chain", action="store_true",
+                   help="also search the usernames found in the email results (GitHub, Gravatar, local part)")
 
     p = sub.add_parser("domain", parents=[common], help="whois, DNS, subdomains / IP geolocation")
     p.add_argument("target", metavar="DOMAIN|IP")
@@ -83,10 +85,17 @@ def one_shot(args: argparse.Namespace) -> int:
         show = "found"
 
     if args.json:
+        if getattr(args, "chain", False) and result.usernames and not result.cancelled:
+            runner.run_chain(result, load_sites(), console, progress=False)
         print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     else:
         # username hits were already printed live; show only the totals
         render_result(console, result, show, streamed=result.kind == "username")
+        if getattr(args, "chain", False) and result.usernames and not result.cancelled:
+            info(console, "chaining username scans: " + ", ".join(result.usernames))
+            results = runner.run_chain(result, load_sites(), console)
+            if results:
+                render_chain_summary(console, results)
 
     if args.save is not None:
         path = report.save_report(result, args.save or None)
