@@ -129,3 +129,67 @@ def email_security(domain: str) -> dict:
 
 def _short(value: str, limit: int = 90) -> str:
     return value if len(value) <= limit else value[: limit - 3] + "..."
+
+
+# ---------------------------------------------------------------- Shodan InternetDB
+
+INTERNETDB_URL = "https://internetdb.shodan.io/{ip}"
+
+
+def resolve_a(domain: str) -> list[str]:
+    """IPv4 addresses of ``domain`` (empty when there is no A record)."""
+    resolver = dns.resolver.Resolver()
+    resolver.lifetime = 5.0
+    try:
+        return sorted(r.to_text() for r in resolver.resolve(domain, "A"))
+    except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.NoNameservers):
+        return []
+    except dns.exception.Timeout:
+        raise RuntimeError("DNS timeout while resolving A records")
+
+
+def internetdb_lookup(ip: str, client) -> dict | None:
+    """The InternetDB record for ``ip``, or ``None`` when Shodan has no data (HTTP 404)."""
+    import httpx
+
+    try:
+        resp = client.get(INTERNETDB_URL.format(ip=ip))
+    except httpx.HTTPError as e:
+        raise RuntimeError(f"could not reach internetdb.shodan.io ({type(e).__name__})")
+    if resp.status_code == 404:
+        return None
+    if resp.status_code != 200:
+        raise RuntimeError(f"InternetDB answered HTTP {resp.status_code}")
+    try:
+        data = resp.json()
+    except ValueError:
+        raise RuntimeError("InternetDB returned an invalid answer")
+    return data if isinstance(data, dict) else None
+
+
+def internetdb_rows(ip: str, data: dict | None) -> list[str]:
+    if not data:
+        return [ip, "-", "-", "-", "No data in Shodan InternetDB"]
+    ports = ", ".join(str(p) for p in sorted(data.get("ports") or []))
+    names = ", ".join(sorted(data.get("hostnames") or []))
+    vulns = sorted(data.get("vulns") or [])
+    shown = ", ".join(vulns[:8]) + (f" (+{len(vulns) - 8} more)" if len(vulns) > 8 else "")
+    return [ip, ports or "-", names or "-", shown or "none listed", ", ".join(data.get("tags") or []) or "-"]
+
+
+def exposure(ips: list[str], client=None) -> dict:
+    """Open ports, hostnames and known CVEs per IP (passive: Shodan's data, no scanning from here)."""
+    from . import net
+
+    if not ips:
+        raise ValueError("no A record to look up")
+    own = client is None
+    client = client or net.sync_client(timeout=10.0)
+    try:
+        rows = [internetdb_rows(ip, internetdb_lookup(ip, client)) for ip in ips[:10]]
+    finally:
+        if own:
+            client.close()
+    body = table(["IP", "Open ports", "Hostnames", "Vulnerabilities (CVE)", "Tags"], rows)
+    body["footer"] = "Passive data from Shodan InternetDB; nothing was scanned from this machine. Listed CVEs are candidates, not confirmed."
+    return body
