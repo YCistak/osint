@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 
 import httpx
 
+from . import net
 from .username import username_valid
 from .models import FOUND, MISSING, UNKNOWN, Hit, ScanResult, bullets, kv, table, text
 
@@ -486,8 +487,8 @@ def scan(
 
     async def main() -> None:
         headers = {"User-Agent": USER_AGENT}
-        async with httpx.AsyncClient(timeout=15.0, headers=headers, follow_redirects=True) as api:
-            async with httpx.AsyncClient(timeout=module_timeout, follow_redirects=True) as probe:
+        async with net.async_client(timeout=15.0, headers=headers, follow_redirects=True) as api:
+            async with net.async_client(timeout=module_timeout, follow_redirects=True) as probe:
                 async with trio.open_nursery() as nursery:
                     nursery.start_soon(fetch_xposed, api, state)
                     nursery.start_soon(fetch_gravatar, api, state)

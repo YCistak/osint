@@ -12,6 +12,7 @@ import dns.resolver
 import dns.reversename
 import httpx
 
+from . import net
 from .models import ScanResult, bullets, kv, table, text
 
 DNS_TYPES = ["A", "AAAA", "MX", "NS", "TXT"]
@@ -136,7 +137,7 @@ def extract_subdomains(records: list[dict], domain: str) -> list[str]:
 
 def crtsh_lookup(domain: str, client: httpx.Client | None = None) -> list[str]:
     own = client is None
-    client = client or httpx.Client(timeout=30.0, follow_redirects=True)
+    client = client or net.sync_client(timeout=30.0, follow_redirects=True)
     try:
         try:
             resp = client.get(CRT_URL.format(domain=domain))
@@ -175,7 +176,7 @@ def reverse_dns(ip: str) -> list[str]:
 def ip_location(ip: str, client: httpx.Client | None = None) -> dict[str, str]:
     """Basic geolocation from ip-api.com (free, no key, HTTP only)."""
     own = client is None
-    client = client or httpx.Client(timeout=10.0)
+    client = client or net.sync_client(timeout=10.0)
     try:
         resp = client.get(IPAPI_URL.format(ip=ip))
         data = resp.json()

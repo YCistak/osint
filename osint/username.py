@@ -17,7 +17,7 @@ from collections.abc import Callable
 
 import httpx
 
-from . import profiles
+from . import net, profiles
 from .models import FOUND, MISSING, UNKNOWN, Hit
 from .sites import Site
 
@@ -113,7 +113,7 @@ async def check_site(
 
 
 def new_client(timeout: float = DEFAULT_TIMEOUT, concurrency: int = DEFAULT_CONCURRENCY) -> httpx.AsyncClient:
-    return httpx.AsyncClient(
+    return net.async_client(
         timeout=timeout,
         headers={"User-Agent": USER_AGENT, "Accept-Language": "en-US,en;q=0.9"},
         limits=httpx.Limits(max_connections=concurrency * 2, max_keepalive_connections=concurrency),
