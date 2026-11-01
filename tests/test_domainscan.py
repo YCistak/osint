@@ -114,14 +114,27 @@ def test_dns_lookup_with_fake_resolver(monkeypatch):
         domainscan.dns_lookup("missing.test")
 
 
+@pytest.fixture(autouse=True)
+def stub_security(monkeypatch):
+    """Keep these tests offline: the security sections have their own tests in test_domainsec.py."""
+    from osint import domainsec
+
+    monkeypatch.setattr(domainsec, "email_security", lambda d: {"type": "text", "text": "stub"})
+    monkeypatch.setattr(domainsec, "resolve_a", lambda d: ["93.184.216.34"])
+    monkeypatch.setattr(domainsec, "exposure", lambda ips: {"type": "text", "text": "stub " + ",".join(ips)})
+    monkeypatch.setattr(domainsec, "tls_certificate", lambda d: {"type": "text", "text": "stub"})
+    monkeypatch.setattr(domainsec, "wayback_summary", lambda d: {"type": "text", "text": "stub"})
+
+
 def test_scan_ip_builds_sections(monkeypatch):
     monkeypatch.setattr(domainscan, "reverse_dns", lambda ip: ["host.example.net"])
     monkeypatch.setattr(domainscan, "ip_location", lambda ip: {"Country": "Turkey"})
     steps = []
     result = domainscan.scan("8.8.8.8", on_step=steps.append)
-    assert list(result.sections) == ["Reverse DNS", "Geolocation"]
+    assert list(result.sections) == ["Reverse DNS", "Geolocation", "Exposure (Shodan InternetDB)"]
     assert result.sections["Reverse DNS"]["items"] == ["host.example.net"]
-    assert steps == ["Reverse DNS", "Geolocation"]
+    assert result.sections["Exposure (Shodan InternetDB)"]["text"] == "stub 8.8.8.8"
+    assert steps == ["Reverse DNS", "Geolocation", "Exposure (Shodan InternetDB)"]
 
 
 def test_scan_failed_step_becomes_text_and_others_still_run(monkeypatch):
@@ -136,6 +149,38 @@ def test_scan_failed_step_becomes_text_and_others_still_run(monkeypatch):
     assert "whois down" in result.sections["Whois"]["text"]
     assert result.sections["DNS records"]["type"] == "table"
     assert result.sections["Subdomains (crt.sh)"]["items"] == ["www.example.com"]
+    assert list(result.sections)[3:] == [
+        "Email security (SPF / DMARC / DKIM)", "Exposure (Shodan InternetDB)",
+        "TLS certificate", "Wayback Machine"]
+
+
+def test_scan_security_sections_fail_independently(monkeypatch):
+    from osint import domainsec
+
+    def tls_down(d):
+        raise RuntimeError("connection timed out")
+
+    monkeypatch.setattr(domainsec, "tls_certificate", tls_down)
+    monkeypatch.setattr(domainscan, "whois_lookup", lambda d: {"Domain": d})
+    monkeypatch.setattr(domainscan, "dns_lookup", lambda d: {"A": []})
+    monkeypatch.setattr(domainscan, "crtsh_lookup", lambda d: [])
+    result = domainscan.scan("example.com")
+    assert "connection timed out" in result.sections["TLS certificate"]["text"]
+    assert result.sections["Wayback Machine"]["text"] == "stub"
+
+
+def test_scan_warns_when_proxy_is_active(monkeypatch):
+    from osint import net
+
+    monkeypatch.setattr(domainscan, "whois_lookup", lambda d: {"Domain": d})
+    monkeypatch.setattr(domainscan, "dns_lookup", lambda d: {"A": []})
+    monkeypatch.setattr(domainscan, "crtsh_lookup", lambda d: [])
+    net.set_proxy("socks5h://127.0.0.1:9050")
+    try:
+        result = domainscan.scan("example.com")
+    finally:
+        net.set_proxy(None)
+    assert any("do not go through the proxy" in n for n in result.notes)
 
 
 def test_scan_rejects_invalid_target():
