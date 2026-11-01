@@ -21,6 +21,13 @@ LEGAL_NOTE = (
 KIND_TITLES = {"phone": "Phone report", "image": "Image report", "username": "Username report", "email": "Email report", "domain": "Domain / IP report"}
 
 
+class ReportRefused(ValueError):
+    """The result must never be written to disk (password checks)."""
+
+
+NEVER_SAVED = {"password"}
+
+
 def reports_dir() -> Path:
     """Default output directory; ``OSINT_REPORT_DIR`` overrides it (used by tests)."""
     env = os.environ.get("OSINT_REPORT_DIR")
@@ -129,6 +136,8 @@ def save_report(
     ``path`` may be a file or a directory; with none, ``./reports/`` is used.
     An existing file is never overwritten: a time suffix and then a counter are added.
     """
+    if result.kind in NEVER_SAVED:
+        raise ReportRefused("password checks are never saved")
     now = now or datetime.now()
     fmt = resolve_format(path, fmt)
     ext = ".html" if fmt == "html" else ".md"
