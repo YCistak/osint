@@ -1,9 +1,10 @@
-"""Alan adı / IP sorguları: whois, DNS, crt.sh alt alan adları, ters DNS, coğrafi konum."""
+"""Domain / IP reconnaissance: whois, DNS, crt.sh subdomains, reverse DNS, geolocation."""
 
 from __future__ import annotations
 
 import ipaddress
 import re
+from collections.abc import Callable
 from datetime import date, datetime
 
 import dns.exception
@@ -11,46 +12,47 @@ import dns.resolver
 import dns.reversename
 import httpx
 
-DNS_TURLERI = ["A", "AAAA", "MX", "NS", "TXT"]
-CRT_URL = "https://crt.sh/?q=%25.{alan}&output=json"
+from .models import ScanResult, bullets, kv, table, text
+
+DNS_TYPES = ["A", "AAAA", "MX", "NS", "TXT"]
+CRT_URL = "https://crt.sh/?q=%25.{domain}&output=json"
 IPAPI_URL = (
     "http://ip-api.com/json/{ip}"
     "?fields=status,message,country,regionName,city,zip,lat,lon,timezone,isp,org,as,query"
 )
-ALAN_DESENI = re.compile(
+DOMAIN_RE = re.compile(
     r"^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9-]{2,63}$", re.I
 )
 
 
-def hedef_turu(hedef: str) -> str:
-    """'ip', 'alan' ya da 'gecersiz' döner."""
-    hedef = hedef.strip()
+def target_kind(target: str) -> str:
+    """Return 'ip', 'domain' or 'invalid'."""
+    target = target.strip()
     try:
-        ipaddress.ip_address(hedef)
+        ipaddress.ip_address(target)
         return "ip"
     except ValueError:
         pass
-    # IDN (ör. türkçe karakterli) alan adlarını punycode'a çevirip dene
-    try:
-        ascii_hedef = hedef.encode("idna").decode("ascii")
+    try:  # internationalized names are checked in punycode form
+        ascii_target = target.encode("idna").decode("ascii")
     except UnicodeError:
-        return "gecersiz"
-    return "alan" if ALAN_DESENI.match(ascii_hedef) else "gecersiz"
+        return "invalid"
+    return "domain" if DOMAIN_RE.match(ascii_target) else "invalid"
 
 
-def hedefi_temizle(ham: str) -> str:
-    """URL/boşluk/sondaki nokta gibi artıkları temizler (ör. https://a.com/x -> a.com)."""
-    h = ham.strip()
-    h = re.sub(r"^[a-z][a-z0-9+.-]*://", "", h, flags=re.I)
-    h = h.split("/")[0].split("?")[0]
-    if h.count(":") == 1:  # alan:port
-        h = h.split(":")[0]
-    return h.rstrip(".").lower()
+def clean_target(raw: str) -> str:
+    """Strip scheme, path, port and trailing dot (https://a.com/x -> a.com)."""
+    t = raw.strip()
+    t = re.sub(r"^[a-z][a-z0-9+.-]*://", "", t, flags=re.I)
+    t = t.split("/")[0].split("?")[0]
+    if t.count(":") == 1:  # host:port
+        t = t.split(":")[0]
+    return t.rstrip(".").lower()
 
 
 # ---------------------------------------------------------------- whois
 
-def _tarih_str(v) -> str:
+def _date_str(v) -> str:
     if isinstance(v, list):
         v = v[0] if v else None
     if isinstance(v, (datetime, date)):
@@ -58,7 +60,7 @@ def _tarih_str(v) -> str:
     return str(v) if v else ""
 
 
-def _liste_str(v) -> str:
+def _list_str(v) -> str:
     if not v:
         return ""
     if isinstance(v, (list, tuple, set)):
@@ -66,132 +68,185 @@ def _liste_str(v) -> str:
     return str(v)
 
 
-def whois_sorgula(alan: str) -> dict[str, str]:
-    """python-whois ile sorgular (bloklayan çağrı; thread içinde çalıştırın)."""
+def whois_lookup(domain: str) -> dict[str, str]:
+    """Query whois (blocking). Raises ValueError if nothing is registered."""
     import whois
 
-    w = whois.whois(alan)
-    alanlar = {
-        "Alan adı": _liste_str(w.get("domain_name")),
-        "Kayıt kuruluşu": _liste_str(w.get("registrar")),
-        "Oluşturulma": _tarih_str(w.get("creation_date")),
-        "Güncellenme": _tarih_str(w.get("updated_date")),
-        "Bitiş": _tarih_str(w.get("expiration_date")),
-        "Ad sunucuları": _liste_str(w.get("name_servers")),
-        "Durum": _liste_str(w.get("status")),
-        "Kuruluş": _liste_str(w.get("org")),
-        "Ülke": _liste_str(w.get("country")),
-        "E-posta": _liste_str(w.get("emails")),
+    w = whois.whois(domain)
+    fields = {
+        "Domain": _list_str(w.get("domain_name")),
+        "Registrar": _list_str(w.get("registrar")),
+        "Created": _date_str(w.get("creation_date")),
+        "Updated": _date_str(w.get("updated_date")),
+        "Expires": _date_str(w.get("expiration_date")),
+        "Name servers": _list_str(w.get("name_servers")),
+        "Status": _list_str(w.get("status")),
+        "Organization": _list_str(w.get("org")),
+        "Country": _list_str(w.get("country")),
+        "Email": _list_str(w.get("emails")),
     }
-    dolu = {k: v for k, v in alanlar.items() if v}
-    if not dolu:
-        raise ValueError("Whois kaydı bulunamadı (alan adı kayıtsız olabilir).")
-    return dolu
+    filled = {k: v for k, v in fields.items() if v}
+    if not filled:
+        raise ValueError("no whois record found (the domain may be unregistered)")
+    return filled
 
 
 # ---------------------------------------------------------------- DNS
 
-def dns_sorgula(alan: str, turler: list[str] | None = None) -> dict[str, list[str]]:
-    """Her kayıt türü için değer listesi döner; bulunamayan türler boş liste olur."""
-    cozucu = dns.resolver.Resolver()
-    cozucu.lifetime = 6.0
-    sonuc: dict[str, list[str]] = {}
-    for tur in turler or DNS_TURLERI:
+def dns_lookup(domain: str, types: list[str] | None = None) -> dict[str, list[str]]:
+    """Values per record type; missing types give an empty list."""
+    resolver = dns.resolver.Resolver()
+    resolver.lifetime = 6.0
+    out: dict[str, list[str]] = {}
+    for rtype in types or DNS_TYPES:
         try:
-            yanit = cozucu.resolve(alan, tur)
-            sonuc[tur] = sorted(r.to_text() for r in yanit)
+            answer = resolver.resolve(domain, rtype)
+            out[rtype] = sorted(r.to_text() for r in answer)
         except dns.resolver.NXDOMAIN:
-            raise ValueError(f"'{alan}' alan adı DNS'te bulunamadı (NXDOMAIN).")
+            raise ValueError(f"'{domain}' does not exist in DNS (NXDOMAIN)")
         except (dns.resolver.NoAnswer, dns.resolver.NoNameservers):
-            sonuc[tur] = []
+            out[rtype] = []
         except dns.exception.Timeout:
-            sonuc[tur] = []
-    return sonuc
+            out[rtype] = []
+    return out
 
 
 # ---------------------------------------------------------------- crt.sh
 
-def alt_alanlari_ayikla(kayitlar: list[dict], alan: str) -> list[str]:
-    """crt.sh JSON kayıtlarından alt alan adlarını tekilleştirip sıralı döner.
+def extract_subdomains(records: list[dict], domain: str) -> list[str]:
+    """Unique, sorted subdomains from crt.sh JSON records.
 
-    name_value alanı satır sonlarıyla birden çok ad içerebilir; '*.' önekleri
-    atılır, küçük harfe çevrilir, hedef alana ait olmayanlar elenir.
+    ``name_value`` may hold several names separated by newlines; ``*.`` prefixes
+    are dropped and names outside ``domain`` are ignored.
     """
-    alan = alan.lower().rstrip(".")
-    bulunan: set[str] = set()
-    for kayit in kayitlar:
-        if not isinstance(kayit, dict):
+    domain = domain.lower().rstrip(".")
+    found: set[str] = set()
+    for rec in records:
+        if not isinstance(rec, dict):
             continue
-        for alan_alan in ("name_value", "common_name"):
-            for ad in str(kayit.get(alan_alan, "")).splitlines():
-                ad = ad.strip().lower().lstrip("*.").rstrip(".")
-                if not ad or "@" in ad or " " in ad:
+        for key in ("name_value", "common_name"):
+            for name in str(rec.get(key, "")).splitlines():
+                name = name.strip().lower().lstrip("*.").rstrip(".")
+                if not name or "@" in name or " " in name:
                     continue
-                if ad == alan or ad.endswith("." + alan):
-                    bulunan.add(ad)
-    return sorted(bulunan)
+                if name == domain or name.endswith("." + domain):
+                    found.add(name)
+    return sorted(found)
 
 
-def crtsh_sorgula(alan: str, client: httpx.Client | None = None) -> list[str]:
-    kendi = client is None
+def crtsh_lookup(domain: str, client: httpx.Client | None = None) -> list[str]:
+    own = client is None
     client = client or httpx.Client(timeout=30.0, follow_redirects=True)
     try:
         try:
-            yanit = client.get(CRT_URL.format(alan=alan))
-        except httpx.TimeoutException:  # crt.sh sık yoğundur: bir kez daha dene
-            yanit = client.get(CRT_URL.format(alan=alan))
-        if yanit.status_code != 200:
-            raise RuntimeError(f"crt.sh yanıt vermedi (HTTP {yanit.status_code}); biraz sonra tekrar deneyin.")
+            resp = client.get(CRT_URL.format(domain=domain))
+        except httpx.TimeoutException:  # crt.sh is often busy: retry once
+            resp = client.get(CRT_URL.format(domain=domain))
+        if resp.status_code != 200:
+            raise RuntimeError(f"crt.sh did not answer (HTTP {resp.status_code}); try again later")
         try:
-            kayitlar = yanit.json()
+            records = resp.json()
         except ValueError:
-            raise RuntimeError("crt.sh geçersiz yanıt döndürdü (JSON değil).")
-        return alt_alanlari_ayikla(kayitlar, alan)
+            raise RuntimeError("crt.sh returned an invalid answer (not JSON)")
+        return extract_subdomains(records, domain)
     except httpx.TimeoutException:
-        raise RuntimeError("crt.sh zaman aşımına uğradı (servis sık sık yoğundur).")
+        raise RuntimeError("crt.sh timed out (the service is often busy)")
     except httpx.HTTPError as e:
-        raise RuntimeError(f"crt.sh'e bağlanılamadı: {type(e).__name__}")
+        raise RuntimeError(f"could not reach crt.sh: {type(e).__name__}")
     finally:
-        if kendi:
+        if own:
             client.close()
 
 
 # ---------------------------------------------------------------- IP
 
-def ters_dns(ip: str) -> list[str]:
-    cozucu = dns.resolver.Resolver()
-    cozucu.lifetime = 6.0
+def reverse_dns(ip: str) -> list[str]:
+    resolver = dns.resolver.Resolver()
+    resolver.lifetime = 6.0
     try:
-        yanit = cozucu.resolve(dns.reversename.from_address(ip), "PTR")
-        return sorted(r.to_text().rstrip(".") for r in yanit)
+        answer = resolver.resolve(dns.reversename.from_address(ip), "PTR")
+        return sorted(r.to_text().rstrip(".") for r in answer)
     except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
         return []
     except dns.exception.Timeout:
-        raise RuntimeError("Ters DNS sorgusu zaman aşımına uğradı.")
+        raise RuntimeError("reverse DNS lookup timed out")
 
 
-def ip_konum(ip: str, client: httpx.Client | None = None) -> dict[str, str]:
-    """ip-api.com (ücretsiz, anahtarsız, yalnızca HTTP) ile temel konum bilgisi."""
-    kendi = client is None
+def ip_location(ip: str, client: httpx.Client | None = None) -> dict[str, str]:
+    """Basic geolocation from ip-api.com (free, no key, HTTP only)."""
+    own = client is None
     client = client or httpx.Client(timeout=10.0)
     try:
-        yanit = client.get(IPAPI_URL.format(ip=ip))
-        veri = yanit.json()
+        resp = client.get(IPAPI_URL.format(ip=ip))
+        data = resp.json()
     except httpx.HTTPError as e:
-        raise RuntimeError(f"ip-api.com'a ulaşılamadı: {type(e).__name__}")
+        raise RuntimeError(f"could not reach ip-api.com: {type(e).__name__}")
     except ValueError:
-        raise RuntimeError("ip-api.com geçersiz yanıt döndürdü.")
+        raise RuntimeError("ip-api.com returned an invalid answer")
     finally:
-        if kendi:
+        if own:
             client.close()
-    if veri.get("status") != "success":
-        raise RuntimeError(f"Konum bulunamadı: {veri.get('message', 'bilinmeyen sebep')}")
-    harita = {
-        "Ülke": "country", "Bölge": "regionName", "Şehir": "city", "Posta kodu": "zip",
-        "Saat dilimi": "timezone", "Servis sağlayıcı (ISP)": "isp",
-        "Kuruluş": "org", "AS": "as",
+    if data.get("status") != "success":
+        raise RuntimeError(f"location not found: {data.get('message', 'unknown reason')}")
+    mapping = {
+        "Country": "country", "Region": "regionName", "City": "city", "Postal code": "zip",
+        "Time zone": "timezone", "ISP": "isp", "Organization": "org", "AS": "as",
     }
-    sonuc = {k: str(veri[v]) for k, v in harita.items() if veri.get(v)}
-    if "lat" in veri and "lon" in veri:
-        sonuc["Koordinat"] = f"{veri['lat']}, {veri['lon']}"
-    return sonuc
+    out = {k: str(data[v]) for k, v in mapping.items() if data.get(v)}
+    if "lat" in data and "lon" in data:
+        out["Coordinates"] = f"{data['lat']}, {data['lon']}"
+    return out
+
+
+# ---------------------------------------------------------------- orchestration
+
+def dns_table(records: dict[str, list[str]]) -> dict:
+    return table(["Type", "Values"], [[t, "; ".join(records.get(t, [])) or "-"] for t in DNS_TYPES])
+
+
+def scan(
+    target: str,
+    result: ScanResult | None = None,
+    on_step: Callable[[str], None] | None = None,
+) -> ScanResult:
+    """Run all lookups for a domain or IP. Each step fails on its own: a failed
+    step becomes a note and the rest still run. Partial output stays in ``result``
+    if the caller interrupts with Ctrl-C."""
+    target = clean_target(target)
+    kind = target_kind(target)
+    if kind == "invalid":
+        raise ValueError(f"'{target}' is not a valid domain or IP address")
+    result = result or ScanResult("domain", target)
+
+    def step(title: str, fn: Callable[[], dict]) -> None:
+        if on_step:
+            on_step(title)
+        try:
+            result.sections[title] = fn()
+        except (ValueError, RuntimeError) as e:
+            result.sections[title] = text(f"Unavailable: {e}")
+        except Exception as e:  # a broken step must not kill the rest
+            result.sections[title] = text(f"Unavailable: {type(e).__name__}: {e}")
+
+    if kind == "ip":
+        step("Reverse DNS", lambda: _ptr_body(target))
+        step("Geolocation", lambda: kv(ip_location(target)))
+    else:
+        step("Whois", lambda: kv(whois_lookup(target)))
+        step("DNS records", lambda: dns_table(dns_lookup(target)))
+        step("Subdomains (crt.sh)", lambda: _subdomain_body(crtsh_lookup(target)))
+    return result
+
+
+def _ptr_body(ip: str) -> dict:
+    names = reverse_dns(ip)
+    return bullets(names) if names else text("No PTR record.")
+
+
+def _subdomain_body(names: list[str]) -> dict:
+    if not names:
+        return text("No certificates found for subdomains.")
+    body = bullets(names[:200])
+    if len(names) > 200:
+        body["items"].append(f"... and {len(names) - 200} more")
+    return body
