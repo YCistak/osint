@@ -120,3 +120,73 @@ def clear(path: Path | None = None) -> int:
         n = conn.execute("SELECT COUNT(*) FROM scans").fetchone()[0]
         conn.execute("DELETE FROM scans")
     return n
+
+
+# ---------------------------------------------------------------- diffs
+
+def _delta(old: list[str], new: list[str]) -> tuple[list[str], list[str]]:
+    o, n = set(old), set(new)
+    return sorted(n - o, key=str.lower), sorted(o - n, key=str.lower)
+
+
+def diff(old: dict, new: dict) -> dict:
+    """What changed from ``old`` to ``new`` (both stored summaries)."""
+    a, b = old["summary"], new["summary"]
+    added_acc, removed_acc = _delta(a.get("accounts", []), b.get("accounts", []))
+    added_br, removed_br = _delta(a.get("breaches", []), b.get("breaches", []))
+    facts: dict[str, dict] = {}
+    for title in sorted(set(a.get("facts", {})) | set(b.get("facts", {}))):
+        add, rem = _delta(a.get("facts", {}).get(title, []), b.get("facts", {}).get(title, []))
+        if add or rem:
+            facts[title] = {"added": add, "removed": rem}
+    out = {"new_accounts": added_acc, "removed_accounts": removed_acc,
+           "new_breaches": added_br, "removed_breaches": removed_br, "facts": facts}
+    if "score" in a and "score" in b and a["score"] != b["score"]:
+        out["score"] = (a["score"], b["score"])
+    return out
+
+
+def is_empty(d: dict) -> bool:
+    return not (d["new_accounts"] or d["removed_accounts"] or d["new_breaches"] or d["removed_breaches"]
+                or d["facts"] or "score" in d)
+
+
+def change_line(d: dict, since: str) -> str:
+    """One line for the end of a scan: what is new since the previous scan of the same target."""
+    if is_empty(d):
+        return f"No changes since the last scan ({since[:10]})."
+    parts = []
+    if d["new_accounts"]:
+        parts.append(f"{len(d['new_accounts'])} new account(s): {', '.join(d['new_accounts'][:8])}")
+    if d["removed_accounts"]:
+        parts.append(f"{len(d['removed_accounts'])} account(s) gone: {', '.join(d['removed_accounts'][:8])}")
+    if d["new_breaches"]:
+        parts.append(f"{len(d['new_breaches'])} new breach(es): {', '.join(d['new_breaches'][:8])}")
+    if d["removed_breaches"]:
+        parts.append(f"{len(d['removed_breaches'])} breach(es) no longer listed")
+    changed = sum(len(v["added"]) + len(v["removed"]) for v in d["facts"].values())
+    if changed:
+        parts.append(f"{changed} other detail change(s) in: {', '.join(d['facts'])}")
+    if "score" in d:
+        parts.append(f"privacy score {d['score'][0]} -> {d['score'][1]}")
+    return f"Changes since the last scan ({since[:10]}): " + "; ".join(parts) + "."
+
+
+def after_scan(result: ScanResult, path: Path | None = None) -> str | None:
+    """Compare with the previous scan of the same target, store this one, return the change line.
+
+    Adds the line to ``result.notes`` so it reaches reports and JSON. Never raises.
+    """
+    if not enabled or result.kind in NEVER_RECORDED or result.cancelled:
+        return None
+    line = None
+    try:
+        prev = latest(result.kind, result.target, path)
+        if prev:
+            current = {"summary": summarize(result)}
+            line = change_line(diff(prev, current), prev["ts"])
+            result.notes.append(line)
+    except (sqlite3.Error, OSError, ValueError, KeyError):
+        line = None
+    record(result, path)
+    return line
