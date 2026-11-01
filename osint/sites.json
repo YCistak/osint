@@ -1,0 +1,5409 @@
+{
+ "source": "maigret data.json (MIT) https://github.com/soxoj/maigret",
+ "generated": "2026-11-01",
+ "count": 500,
+ "sites": [
+  {
+   "name": "YouTube",
+   "url": "https://www.youtube.com/@{username}/about",
+   "check_type": "message",
+   "rank": 3,
+   "presence": [
+    "visitorData",
+    "userAgent"
+   ],
+   "absence": [
+    "404 Not Found"
+   ],
+   "headers": {
+    "User-Agent": "curl/8.6.0",
+    "Accept": "*/*"
+   },
+   "regex_check": "^[^\\/]+$",
+   "claimed": "test"
+  },
+  {
+   "name": "LinkedIn",
+   "url": "https://linkedin.com/in/{username}",
+   "check_type": "status_code",
+   "rank": 6,
+   "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+   },
+   "regex_check": "^[a-zA-Z0-9_-]{3,100}$",
+   "claimed": "paulpfeister"
+  },
+  {
+   "name": "GitHub",
+   "url": "https://github.com/{username}",
+   "check_type": "status_code",
+   "rank": 10,
+   "url_probe": "https://api.github.com/users/{username}",
+   "regex_check": "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$",
+   "claimed": "blue"
+  },
+  {
+   "name": "WordPressOrg",
+   "url": "https://profiles.wordpress.org/{username}/",
+   "check_type": "response_url",
+   "rank": 12,
+   "claimed": "blue"
+  },
+  {
+   "name": "GooglePlayStore",
+   "url": "https://play.google.com/store/apps/developer?id={username}",
+   "check_type": "status_code",
+   "rank": 14,
+   "claimed": "KONAMI"
+  },
+  {
+   "name": "Wikipedia",
+   "url": "https://en.wikipedia.org/wiki/User:{username}",
+   "check_type": "message",
+   "rank": 15,
+   "url_probe": "https://en.wikipedia.org/w/api.php?action=query&format=json&list=users&ususers={username}&usprop=cancreate&formatversion=2",
+   "presence": [
+    "\"userid\""
+   ],
+   "absence": [
+    "\"missing\""
+   ],
+   "claimed": "Jimbo_Wales"
+  },
+  {
+   "name": "Bit.ly",
+   "url": "https://bit.ly/{username}",
+   "check_type": "status_code",
+   "rank": 32,
+   "claimed": "john"
+  },
+  {
+   "name": "WordPress",
+   "url": "https://{username}.wordpress.com/",
+   "check_type": "response_url",
+   "rank": 34,
+   "regex_check": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Telegram",
+   "url": "https://t.me/{username}",
+   "check_type": "message",
+   "rank": 42,
+   "presence": [
+    "tgme_page_title"
+   ],
+   "absence": [
+    "<meta name=\"robots\" content=\"noindex, nofollow\">",
+    "<meta property=\"twitter:title\" content=\"Telegram: Contact"
+   ],
+   "regex_check": "^[a-zA-Z][a-zA-Z0-9_]{4,}$",
+   "claimed": "BotFather"
+  },
+  {
+   "name": "Tumblr",
+   "url": "https://www.tumblr.com/{username}",
+   "check_type": "message",
+   "rank": 56,
+   "presence": [
+    "profile",
+    " title="
+   ],
+   "absence": [
+    "Not found.",
+    ":404,",
+    "userAgent"
+   ],
+   "regex_check": "^[^\\.]+$",
+   "claimed": "soxoj"
+  },
+  {
+   "name": "Spotify",
+   "url": "https://open.spotify.com/user/{username}",
+   "check_type": "status_code",
+   "rank": 60,
+   "url_probe": "https://api.stats.fm/api/v1/users/{username}",
+   "claimed": "alex"
+  },
+  {
+   "name": "Flickr",
+   "url": "https://www.flickr.com/photos/{username}",
+   "check_type": "status_code",
+   "rank": 64,
+   "claimed": "blue"
+  },
+  {
+   "name": "Flickr Groups",
+   "url": "https://www.flickr.com/groups/{username}",
+   "check_type": "message",
+   "rank": 64,
+   "presence": [
+    "username",
+    "\tstyle=",
+    "og:title",
+    "\t title=",
+    "blastUserName"
+   ],
+   "absence": [
+    ":404,",
+    "registryName",
+    "parentName",
+    "error-id",
+    "searchType"
+   ],
+   "claimed": "sunny2000"
+  },
+  {
+   "name": "Medium",
+   "url": "https://medium.com/@{username}",
+   "check_type": "status_code",
+   "rank": 66,
+   "url_probe": "https://medium.com/feed/@{username}",
+   "claimed": "blue"
+  },
+  {
+   "name": "VK",
+   "url": "https://vk.com/{username}",
+   "check_type": "status_code",
+   "rank": 91,
+   "regex_check": "^(?!id\\d)[a-zA-Z0-9_]*$",
+   "claimed": "smith"
+  },
+  {
+   "name": "Launchpad",
+   "url": "https://launchpad.net/~{username}",
+   "check_type": "status_code",
+   "rank": 93,
+   "claimed": "blue"
+  },
+  {
+   "name": "Issuu",
+   "url": "https://issuu.com/{username}",
+   "check_type": "message",
+   "rank": 110,
+   "presence": [
+    "\"displayName\":\""
+   ],
+   "absence": [
+    "NEXT_HTTP_ERROR_FALLBACK;404"
+   ],
+   "headers": {
+    "RSC": "1"
+   },
+   "claimed": "jenny"
+  },
+  {
+   "name": "Weebly",
+   "url": "http://{username}.weebly.com/",
+   "check_type": "message",
+   "rank": 118,
+   "presence": [
+    "<html>"
+   ],
+   "absence": [
+    "Error - Page Not Found"
+   ],
+   "regex_check": "^[a-zA-Z0-9]+$",
+   "claimed": "designguild"
+  },
+  {
+   "name": "Calendly",
+   "url": "https://calendly.com/{username}",
+   "check_type": "status_code",
+   "rank": 145,
+   "url_probe": "https://calendly.com/api/booking/profiles/{username}",
+   "presence": [
+    "profile",
+    " User"
+   ],
+   "absence": [
+    "The page you are looking for could not be found"
+   ],
+   "claimed": "john"
+  },
+  {
+   "name": "GitLab",
+   "url": "https://gitlab.com/{username}",
+   "check_type": "message",
+   "rank": 155,
+   "url_probe": "https://gitlab.com/api/v4/users?username={username}",
+   "absence": [
+    "[]"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Twitch",
+   "url": "https://twitchtracker.com/{username}",
+   "check_type": "status_code",
+   "rank": 163,
+   "url_probe": "https://twitchtracker.com/{username}",
+   "claimed": "adam"
+  },
+  {
+   "name": "StackOverflow",
+   "url": "https://stackoverflow.com/users/filter?search={username}",
+   "check_type": "message",
+   "rank": 178,
+   "url_probe": "https://api.stackexchange.com/2.3/users?order=desc&sort=name&inname={username}&site=stackoverflow",
+   "presence": [
+    "\"items\":[{"
+   ],
+   "absence": [
+    "\"items\":[]"
+   ],
+   "claimed": "maigret"
+  },
+  {
+   "name": "Bluesky",
+   "url": "https://bsky.app/profile/{username}.bsky.social",
+   "check_type": "message",
+   "rank": 184,
+   "url_probe": "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor={username}.bsky.social",
+   "presence": [
+    "\"did\""
+   ],
+   "absence": [
+    "Profile not found"
+   ],
+   "claimed": "shamerli"
+  },
+  {
+   "name": "Substack",
+   "url": "https://substack.com/@{username}",
+   "check_type": "status_code",
+   "rank": 190,
+   "url_probe": "https://substack.com/api/v1/user/{username}/public_profile",
+   "claimed": "user23"
+  },
+  {
+   "name": "Blogger",
+   "url": "https://{username}.blogspot.com",
+   "check_type": "status_code",
+   "rank": 197,
+   "regex_check": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+   "claimed": "blue"
+  },
+  {
+   "name": "CNET",
+   "url": "https://www.cnet.com/profiles/{username}/",
+   "check_type": "message",
+   "rank": 203,
+   "presence": [
+    "og:type\" content=\"profile\""
+   ],
+   "absence": [
+    "Page Not Found"
+   ],
+   "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
+   },
+   "claimed": "leadicicco"
+  },
+  {
+   "name": "Wix",
+   "url": "https://{username}.wix.com",
+   "check_type": "status_code",
+   "rank": 222,
+   "regex_check": "^[^\\.]+$",
+   "claimed": "support"
+  },
+  {
+   "name": "DailyMotion",
+   "url": "https://www.dailymotion.com/{username}",
+   "check_type": "status_code",
+   "rank": 229,
+   "url_probe": "https://api.dailymotion.com/user/{username}?fields=id,username,screenname,description,avatar_720_url,cover_250_url,followers_total,following_total,videos_total,country,created_time,verified,url",
+   "claimed": "blue"
+  },
+  {
+   "name": "Imgur",
+   "url": "https://imgur.com/user/{username}",
+   "check_type": "response_url",
+   "rank": 243,
+   "url_probe": "https://api.imgur.com/account/v1/accounts/{username}?client_id=546c25a59c58ad7&include=trophies%2Cmedallions",
+   "claimed": "adam"
+  },
+  {
+   "name": "Myspace",
+   "url": "https://myspace.com/{username}",
+   "check_type": "status_code",
+   "rank": 247,
+   "claimed": "blue"
+  },
+  {
+   "name": "ThemeForest",
+   "url": "https://themeforest.net/user/{username}",
+   "check_type": "status_code",
+   "rank": 248,
+   "claimed": "adam"
+  },
+  {
+   "name": "GoodReads",
+   "url": "https://www.goodreads.com/{username}",
+   "check_type": "message",
+   "rank": 259,
+   "presence": [
+    "og:type\" content=\"profile\""
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "OpenStreetMap",
+   "url": "https://www.openstreetmap.org/user/{username}",
+   "check_type": "status_code",
+   "rank": 296,
+   "regex_check": "^[^\\.]+$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Dribbble",
+   "url": "https://dribbble.com/{username}",
+   "check_type": "message",
+   "rank": 306,
+   "absence": [
+    "Whoops, that page is gone."
+   ],
+   "regex_check": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+   "claimed": "blue"
+  },
+  {
+   "name": "OP.GG LoL Brazil",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=br",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/br/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "Blaze51"
+  },
+  {
+   "name": "OP.GG LoL Europe Nordic & East",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=eune",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/eune/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "Blaze51"
+  },
+  {
+   "name": "OP.GG LoL Europe West",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=euw",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/euw/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "Blaze51"
+  },
+  {
+   "name": "OP.GG LoL Japan",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=jp",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/jp/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "OP.GG LoL Korea",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=kr",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/kr/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "OP.GG LoL LAN",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=lan",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/lan/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "OP.GG LoL LAS",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=las",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/las/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "OP.GG LoL Middle East",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=me",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/me/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "OP.GG LoL North America",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=na",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/na/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "Blaze51"
+  },
+  {
+   "name": "OP.GG LoL Oceania",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=oce",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/oce/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "OP.GG LoL Russia",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=ru",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/ru/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "OP.GG LoL Taiwan",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=tw",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/tw/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "OP.GG LoL Turkey",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=tr",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/tr/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "OP.GG LoL Vietnam",
+   "url": "https://op.gg/lol/summoners/search?q={username}&region=vn",
+   "check_type": "message",
+   "rank": 331,
+   "presence": [
+    "href=\"/lol/summoners/vn/"
+   ],
+   "absence": [
+    ">“No search results for"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Xing",
+   "url": "https://www.xing.com/profile/{username}",
+   "check_type": "message",
+   "rank": 332,
+   "presence": [
+    "og:type\" content=\"profile\"",
+    "data-qa=\"xing-id-container\""
+   ],
+   "absence": [
+    "404 - Not Found | XING"
+   ],
+   "errors": {
+    "crate/login-": "Login required"
+   },
+   "claimed": "Ivan_Ivanov"
+  },
+  {
+   "name": "Gofundme",
+   "url": "https://www.gofundme.com/f/{username}",
+   "check_type": "status_code",
+   "rank": 394,
+   "claimed": "adamcoussins"
+  },
+  {
+   "name": "Giphy",
+   "url": "https://giphy.com/channel/{username}",
+   "check_type": "message",
+   "rank": 412,
+   "presence": [
+    "Giphy",
+    "al:ios:app_name"
+   ],
+   "absence": [
+    "404 Not Found"
+   ],
+   "claimed": "theabbie"
+  },
+  {
+   "name": "BuzzFeed",
+   "url": "https://buzzfeed.com/{username}",
+   "check_type": "status_code",
+   "rank": 465,
+   "claimed": "blue"
+  },
+  {
+   "name": "W3Schools",
+   "url": "https://pathfinder-api.kai.w3spaces.com/public-profile-api/{username}",
+   "check_type": "status_code",
+   "rank": 466,
+   "claimed": "rly0nheart"
+  },
+  {
+   "name": "Naver",
+   "url": "https://blog.naver.com/{username}",
+   "check_type": "status_code",
+   "rank": 475,
+   "claimed": "blue"
+  },
+  {
+   "name": "Disqus",
+   "url": "https://disqus.com/{username}",
+   "check_type": "status_code",
+   "rank": 485,
+   "url_probe": "https://disqus.com/api/3.0/users/details?user=username%3A{username}&attach=userFlaggedUser&api_key=E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2F",
+   "presence": [
+    "https://disqus.com/api/users/"
+   ],
+   "absence": [
+    "User matching query does not exist"
+   ],
+   "regex_check": "^[^/]+$",
+   "errors": {
+    "Invalid API key": "New API key needed"
+   },
+   "claimed": "blue"
+  },
+  {
+   "name": "Snapchat",
+   "url": "https://www.snapchat.com/add/{username}",
+   "check_type": "status_code",
+   "rank": 525,
+   "regex_check": "^[a-z][a-z-_.]{3,15}",
+   "claimed": "teamsnapchat"
+  },
+  {
+   "name": "Trello",
+   "url": "https://trello.com/{username}",
+   "check_type": "message",
+   "rank": 535,
+   "url_probe": "https://trello.com/1/Members/{username}",
+   "absence": [
+    "model not found"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "OK",
+   "url": "https://ok.ru/{username}",
+   "check_type": "status_code",
+   "rank": 537,
+   "regex_check": "^[a-zA-Z][a-zA-Z0-9_.-]*$",
+   "claimed": "ok"
+  },
+  {
+   "name": "MixCloud",
+   "url": "https://www.mixcloud.com/{username}/",
+   "check_type": "status_code",
+   "rank": 584,
+   "url_probe": "https://api.mixcloud.com/{username}/",
+   "claimed": "jenny"
+  },
+  {
+   "name": "NPM",
+   "url": "https://www.npmjs.com/~{username}",
+   "check_type": "message",
+   "rank": 590,
+   "url_probe": "https://registry.npmjs.org/-/v1/search?text=maintainer:{username}&size=1",
+   "presence": [
+    "\"objects\":[{"
+   ],
+   "absence": [
+    "\"total\":0"
+   ],
+   "claimed": "sindresorhus"
+  },
+  {
+   "name": "Steam (Group)",
+   "url": "https://steamcommunity.com/groups/{username}",
+   "check_type": "message",
+   "rank": 650,
+   "absence": [
+    "No group could be retrieved for the given URL"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "DigitalOcean",
+   "url": "https://www.digitalocean.com/community/users/{username}",
+   "check_type": "status_code",
+   "rank": 659,
+   "regex_check": "^[^\\.]+$",
+   "claimed": "red"
+  },
+  {
+   "name": "About.me",
+   "url": "https://about.me/{username}",
+   "check_type": "status_code",
+   "rank": 685,
+   "claimed": "jeff"
+  },
+  {
+   "name": "Instructables",
+   "url": "https://www.instructables.com/member/{username}",
+   "check_type": "message",
+   "rank": 700,
+   "absence": [
+    "404: We're sorry, things break sometimes"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Ameblo",
+   "url": "https://ameblo.jp/{username}",
+   "check_type": "message",
+   "rank": 701,
+   "presence": [
+    "profile"
+   ],
+   "absence": [
+    "THROW_NOT_FOUND_EXCEPTION"
+   ],
+   "claimed": "senpai"
+  },
+  {
+   "name": "HuggingFace",
+   "url": "https://huggingface.co/{username}",
+   "check_type": "status_code",
+   "rank": 706,
+   "url_probe": "https://huggingface.co/api/users/{username}/overview",
+   "claimed": "blue"
+  },
+  {
+   "name": "Laracast",
+   "url": "https://laracasts.com/@{username}",
+   "check_type": "status_code",
+   "rank": 738,
+   "regex_check": "^[a-zA-Z0-9_-]{3,}$",
+   "claimed": "user1"
+  },
+  {
+   "name": "Paypal",
+   "url": "https://www.paypal.com/paypalme/{username}",
+   "check_type": "message",
+   "rank": 775,
+   "presence": [
+    "displayName",
+    "displayEmail"
+   ],
+   "absence": [
+    "<title>PayPal.Me</title><meta name=\"twitt",
+    "<div class=\"row error404\""
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Itch.io",
+   "url": "https://{username}.itch.io/",
+   "check_type": "status_code",
+   "rank": 785,
+   "regex_check": "^[^\\.]+$",
+   "claimed": "blue"
+  },
+  {
+   "name": "BitBucket",
+   "url": "https://bitbucket.org/{username}/",
+   "check_type": "status_code",
+   "rank": 801,
+   "url_probe": "https://api.bitbucket.org/2.0/workspaces/{username}",
+   "regex_check": "^[a-zA-Z0-9-_]{1,30}$",
+   "claimed": "atlassian"
+  },
+  {
+   "name": "Gumroad",
+   "url": "https://www.gumroad.com/{username}",
+   "check_type": "message",
+   "rank": 871,
+   "presence": [
+    "title=\"Gumroad\""
+   ],
+   "absence": [
+    "Page not found"
+   ],
+   "regex_check": "^[^\\.]+$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Douban",
+   "url": "https://www.douban.com/people/{username}/",
+   "check_type": "message",
+   "rank": 908,
+   "presence": [
+    "db-usr-profile"
+   ],
+   "absence": [
+    "返回首页"
+   ],
+   "claimed": "darkmage"
+  },
+  {
+   "name": "iStock",
+   "url": "https://www.istockphoto.com/ru/portfolio/{username}",
+   "check_type": "message",
+   "rank": 930,
+   "presence": [
+    "collectionName"
+   ],
+   "absence": [
+    "subheading"
+   ],
+   "errors": {
+    "recaptchaKey": "Captcha detected"
+   },
+   "claimed": "leowilde"
+  },
+  {
+   "name": "Pastebin",
+   "url": "https://pastebin.com/u/{username}",
+   "check_type": "response_url",
+   "rank": 932,
+   "claimed": "blue"
+  },
+  {
+   "name": "TradingView",
+   "url": "https://www.tradingview.com/u/{username}",
+   "check_type": "status_code",
+   "rank": 999,
+   "claimed": "blue"
+  },
+  {
+   "name": "Jimdo",
+   "url": "https://{username}.jimdosite.com",
+   "check_type": "status_code",
+   "rank": 1037,
+   "regex_check": "^[^\\.]+$",
+   "claimed": "jenny"
+  },
+  {
+   "name": "kofi",
+   "url": "https://ko-fi.com/{username}",
+   "check_type": "message",
+   "rank": 1096,
+   "absence": [
+    "Make income from your art!",
+    "https://storage.ko-fi.com/cdn/og.png"
+   ],
+   "regex_check": "^[^\\.]+$",
+   "claimed": "yeahkenny"
+  },
+  {
+   "name": "Rottentomatoes",
+   "url": "https://www.rottentomatoes.com/critic/{username}/movies",
+   "check_type": "status_code",
+   "rank": 1101,
+   "claimed": "ben-allen"
+  },
+  {
+   "name": "YandexZenChannel",
+   "url": "https://dzen.ru/channel/{username}",
+   "check_type": "message",
+   "rank": 1118,
+   "presence": [
+    "zen_object_id"
+   ],
+   "absence": [
+    ".zen-ui-page-404"
+   ],
+   "headers": {
+    "Cookie": "Session_id=noauth:1; yandex_login=; ys=c_chck.1; mda2_beacon=1; sso_status=sso.passport.yandex.ru:synchronized; _yasc=1; _ym_uid=1; _ym_d=1; _ym_isad=2; yandexuid=1"
+   },
+   "claimed": "tema"
+  },
+  {
+   "name": "DEV Community",
+   "url": "https://dev.to/{username}",
+   "check_type": "status_code",
+   "rank": 1119,
+   "regex_check": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Duolingo",
+   "url": "https://www.duolingo.com/profile/{username}",
+   "check_type": "message",
+   "rank": 1126,
+   "url_probe": "https://www.duolingo.com/2017-06-30/users?username={username}",
+   "absence": [
+    "{\"users\":[]}"
+   ],
+   "claimed": "duolingo"
+  },
+  {
+   "name": "IBM Video",
+   "url": "https://video.ibm.com/{username}",
+   "check_type": "status_code",
+   "rank": 1143,
+   "claimed": "nasahdtv"
+  },
+  {
+   "name": "Wikidot",
+   "url": "http://www.wikidot.com/user:info/{username}",
+   "check_type": "message",
+   "rank": 1183,
+   "presence": [
+    "Wikidot user since"
+   ],
+   "absence": [
+    "User does not exist."
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "ReverbNation",
+   "url": "https://www.reverbnation.com/{username}",
+   "check_type": "message",
+   "rank": 1205,
+   "presence": [
+    "og:type\" content=\"band\""
+   ],
+   "regex_check": "^[^\\.]+$",
+   "errors": {
+    "But your computer or network appears to be generating a lot of automated requests": "Too many requests"
+   },
+   "claimed": "blue"
+  },
+  {
+   "name": "Gitee",
+   "url": "https://gitee.com/{username}",
+   "check_type": "status_code",
+   "rank": 1236,
+   "claimed": "wizzer"
+  },
+  {
+   "name": "ImageShack",
+   "url": "https://imageshack.com/user/{username}",
+   "check_type": "response_url",
+   "rank": 1263,
+   "claimed": "blue"
+  },
+  {
+   "name": "note",
+   "url": "https://note.com/{username}",
+   "check_type": "status_code",
+   "rank": 1295,
+   "claimed": "blue"
+  },
+  {
+   "name": "LiveInternet",
+   "url": "https://www.liveinternet.ru/users/{username}/profile",
+   "check_type": "message",
+   "rank": 1323,
+   "presence": [
+    "/foaf/"
+   ],
+   "errors": {
+    "При выполнении запроса этой страницы произошла ошибка.": "Site error"
+   },
+   "claimed": "marrietta"
+  },
+  {
+   "name": "BuyMeACoffee",
+   "url": "https://buymeacoff.ee/{username}",
+   "check_type": "status_code",
+   "rank": 1329,
+   "url_probe": "https://www.buymeacoffee.com/{username}",
+   "claimed": "red"
+  },
+  {
+   "name": "Gitea",
+   "url": "https://gitea.com/{username}",
+   "check_type": "status_code",
+   "rank": 1342,
+   "claimed": "xorm"
+  },
+  {
+   "name": "Flipboard",
+   "url": "https://flipboard.com/@{username}",
+   "check_type": "status_code",
+   "rank": 1376,
+   "regex_check": "^([a-zA-Z0-9_]){1,15}$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Pbase",
+   "url": "https://pbase.com/{username}/profile",
+   "check_type": "message",
+   "rank": 1388,
+   "absence": [
+    "Unknown Artist</title>"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Packagist",
+   "url": "https://packagist.org/packages/{username}/",
+   "check_type": "response_url",
+   "rank": 1392,
+   "claimed": "psr"
+  },
+  {
+   "name": "Geeksfor Geeks",
+   "url": "https://www.geeksforgeeks.org/profile/{username}",
+   "check_type": "message",
+   "rank": 1426,
+   "presence": [
+    "institute_name"
+   ],
+   "absence": [
+    "<title>undefined   | GeeksforGeeks Profile"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Habr",
+   "url": "https://habr.com/ru/users/{username}/",
+   "check_type": "status_code",
+   "rank": 1475,
+   "claimed": "blue"
+  },
+  {
+   "name": "Diigo",
+   "url": "https://www.diigo.com/interact_api/load_profile_info?name={username}",
+   "check_type": "message",
+   "rank": 1510,
+   "absence": [
+    "{}"
+   ],
+   "claimed": "markmark"
+  },
+  {
+   "name": "Windy",
+   "url": "https://community.windy.com/user/{username}",
+   "check_type": "status_code",
+   "rank": 1582,
+   "claimed": "blue"
+  },
+  {
+   "name": "Codecanyon",
+   "url": "https://codecanyon.net/user/{username}",
+   "check_type": "status_code",
+   "rank": 1602,
+   "claimed": "adam"
+  },
+  {
+   "name": "Minecraft",
+   "url": "https://api.mojang.com/users/profiles/minecraft/{username}",
+   "check_type": "message",
+   "rank": 1635,
+   "absence": [
+    "Couldn't find any profile with name"
+   ],
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]{1,25}$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Codecademy",
+   "url": "https://www.codecademy.com/profiles/{username}",
+   "check_type": "message",
+   "rank": 1642,
+   "presence": [
+    "Codecademy profile page for"
+   ],
+   "absence": [
+    "This profile could not be found"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "{username}.tilda.ws",
+   "url": "https://{username}.tilda.ws",
+   "check_type": "status_code",
+   "rank": 1648,
+   "claimed": "alex"
+  },
+  {
+   "name": "HackerNoon",
+   "url": "https://hackernoon.com/u/{username}",
+   "check_type": "status_code",
+   "rank": 1690,
+   "url_probe": "https://us-central1-hackernoon-app.cloudfunctions.net/profilesApi/?handle={username}",
+   "claimed": "god"
+  },
+  {
+   "name": "Instapaper",
+   "url": "https://www.instapaper.com/p/{username}",
+   "check_type": "message",
+   "rank": 1830,
+   "url_probe": "https://www.instapaper.com/data/profile/{username}",
+   "presence": [
+    "\"is_private\":",
+    "\"is_own_profile\":"
+   ],
+   "claimed": "john"
+  },
+  {
+   "name": "Speakerdeck",
+   "url": "https://speakerdeck.com/{username}",
+   "check_type": "message",
+   "rank": 1889,
+   "absence": [
+    "User Not Found"
+   ],
+   "regex_check": "^[^\\.]+$",
+   "claimed": "adam"
+  },
+  {
+   "name": "Wattpad",
+   "url": "https://www.wattpad.com/user/{username}",
+   "check_type": "message",
+   "rank": 1920,
+   "absence": [
+    "userError-404"
+   ],
+   "claimed": "Dogstho7951"
+  },
+  {
+   "name": "Freecodecamp",
+   "url": "https://www.freecodecamp.org/forum//u/{username}",
+   "check_type": "status_code",
+   "rank": 1927,
+   "url_probe": "https://www.freecodecamp.org/forum//u/{username}.json",
+   "claimed": "JeremyLT"
+  },
+  {
+   "name": "MyAnimeList",
+   "url": "https://myanimelist.net/profile/{username}",
+   "check_type": "status_code",
+   "rank": 2064,
+   "claimed": "blue"
+  },
+  {
+   "name": "Flightradar24",
+   "url": "https://my.flightradar24.com/{username}",
+   "check_type": "status_code",
+   "rank": 2164,
+   "regex_check": "^[a-zA-Z0-9_]{3,20}$",
+   "claimed": "jebbrooks"
+  },
+  {
+   "name": "Max",
+   "url": "https://max.ru/{username}",
+   "check_type": "message",
+   "rank": 2208,
+   "presence": [
+    "channel:{title:\""
+   ],
+   "absence": [
+    "Не нашли чат по этой ссылке"
+   ],
+   "claimed": "ivolk"
+  },
+  {
+   "name": "TVTropes",
+   "url": "https://tvtropes.org/pmwiki/pmwiki.php/Tropers/{username}",
+   "check_type": "status_code",
+   "rank": 2347,
+   "regex_check": "^[^\\.]+$",
+   "claimed": "Chabal2"
+  },
+  {
+   "name": "Tistory",
+   "url": "https://{username}.tistory.com/",
+   "check_type": "status_code",
+   "rank": 2431,
+   "claimed": "notice"
+  },
+  {
+   "name": "JSFiddle",
+   "url": "https://jsfiddle.net/u/{username}/",
+   "check_type": "status_code",
+   "rank": 2472,
+   "claimed": "john"
+  },
+  {
+   "name": "GamesRadar",
+   "url": "https://www.gamesradar.com/uk/author/{username}/",
+   "check_type": "status_code",
+   "rank": 2489,
+   "claimed": "jordan-gerblick"
+  },
+  {
+   "name": "Geocaching",
+   "url": "https://www.geocaching.com/p/?u={username}",
+   "check_type": "status_code",
+   "rank": 2512,
+   "claimed": "blue"
+  },
+  {
+   "name": "Gog",
+   "url": "https://www.gog.com/u/{username}",
+   "check_type": "status_code",
+   "rank": 2557,
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Coub",
+   "url": "https://coub.com/{username}",
+   "check_type": "status_code",
+   "rank": 2621,
+   "claimed": "bestcoubs"
+  },
+  {
+   "name": "Keybase",
+   "url": "https://keybase.io/{username}",
+   "check_type": "message",
+   "rank": 2645,
+   "url_probe": "https://keybase.io/_/api/1.0/user/lookup.json?usernames={username}",
+   "absence": [
+    "them\":[null]",
+    "bad list value"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Odysee",
+   "url": "https://odysee.com/@{username}",
+   "check_type": "message",
+   "rank": 2842,
+   "presence": [
+    "<link rel=\"canonical\" href=\"https://odysee.com/@"
+   ],
+   "claimed": "Odysee"
+  },
+  {
+   "name": "Donorbox",
+   "url": "https://donorbox.org/{username}",
+   "check_type": "status_code",
+   "rank": 2873,
+   "claimed": "theabbie"
+  },
+  {
+   "name": "Hack MD",
+   "url": "https://hackmd.io/@{username}",
+   "check_type": "message",
+   "rank": 2877,
+   "presence": [
+    " - HackMD</title>"
+   ],
+   "absence": [
+    "<title>404 Not Found - HackMD</title>"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "iNaturalist",
+   "url": "https://www.inaturalist.org/people/{username}",
+   "check_type": "status_code",
+   "rank": 2885,
+   "url_probe": "https://api.inaturalist.org/v1/users/{username}",
+   "claimed": "kueda"
+  },
+  {
+   "name": "Venmo",
+   "url": "https://venmo.com/{username}",
+   "check_type": "status_code",
+   "rank": 2947,
+   "claimed": "jenny"
+  },
+  {
+   "name": "Teletype",
+   "url": "https://teletype.in/@{username}",
+   "check_type": "status_code",
+   "rank": 2989,
+   "claimed": "blue"
+  },
+  {
+   "name": "Steemit",
+   "url": "https://steemit.com/@{username}",
+   "check_type": "message",
+   "rank": 3000,
+   "presence": [
+    "profile",
+    " username"
+   ],
+   "absence": [
+    "NotFound__menu"
+   ],
+   "claimed": "apiprincz"
+  },
+  {
+   "name": "Chess",
+   "url": "https://www.chess.com/member/{username}",
+   "check_type": "message",
+   "rank": 3078,
+   "url_probe": "https://api.chess.com/pub/player/{username}",
+   "presence": [
+    "\"player_id\":",
+    "\"@id\":\"https://api.chess.com/pub/player/"
+   ],
+   "absence": [
+    "error image",
+    "        <h1>404 Page not found</h1>",
+    "_404-header",
+    "_404-inner-container",
+    " no-nav ",
+    "not found."
+   ],
+   "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
+   },
+   "claimed": "sexytwerker69"
+  },
+  {
+   "name": "CTAN",
+   "url": "https://ctan.org/author/{username}",
+   "check_type": "status_code",
+   "rank": 3081,
+   "claimed": "briggs"
+  },
+  {
+   "name": "OpenCollective",
+   "url": "https://opencollective.com/{username}",
+   "check_type": "status_code",
+   "rank": 3098,
+   "claimed": "sindresorhus"
+  },
+  {
+   "name": "DailyKos",
+   "url": "https://www.dailykos.com/user/{username}",
+   "check_type": "message",
+   "rank": 3110,
+   "presence": [
+    "bp-personal-tab"
+   ],
+   "absence": [
+    "bp-nouveau error404"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Mix",
+   "url": "https://mix.com/{username}",
+   "check_type": "response_url",
+   "rank": 3181,
+   "claimed": "adam"
+  },
+  {
+   "name": "Slides",
+   "url": "https://slides.com/{username}",
+   "check_type": "status_code",
+   "rank": 3412,
+   "claimed": "adam"
+  },
+  {
+   "name": "HackerOne",
+   "url": "https://hackerone.com/{username}",
+   "check_type": "status_code",
+   "rank": 3645,
+   "claimed": "nahamsec"
+  },
+  {
+   "name": "MyMiniFactory",
+   "url": "https://www.myminifactory.com/users/{username}",
+   "check_type": "status_code",
+   "rank": 4152,
+   "claimed": "blue"
+  },
+  {
+   "name": "OpenSource",
+   "url": "https://opensource.com/users/{username}",
+   "check_type": "status_code",
+   "rank": 4335,
+   "claimed": "seth"
+  },
+  {
+   "name": "Couchsurfing",
+   "url": "https://www.couchsurfing.com/people/{username}",
+   "check_type": "status_code",
+   "rank": 4350,
+   "claimed": "blue"
+  },
+  {
+   "name": "Imgflip",
+   "url": "https://imgflip.com/user/{username}",
+   "check_type": "message",
+   "rank": 4416,
+   "presence": [
+    "u-username",
+    "user-page",
+    "user-title",
+    "user-panel",
+    "user-joined"
+   ],
+   "absence": [
+    "\t\t<h1>404 Page Not Found</h1>\r",
+    "<title>404 Page Not Found</title>\r",
+    "info-page ibox",
+    "\t\t<p>Or maybe the <a href=",
+    "\t\t<p>Were you looking for the <a href="
+   ],
+   "claimed": "sparkles99"
+  },
+  {
+   "name": "Hackaday",
+   "url": "https://hackaday.io/{username}",
+   "check_type": "status_code",
+   "rank": 4424,
+   "claimed": "adam"
+  },
+  {
+   "name": "Designs99",
+   "url": "https://99designs.com/profiles/{username}",
+   "check_type": "message",
+   "rank": 4509,
+   "presence": [
+    "profileUrl"
+   ],
+   "absence": [
+    "mobile-only"
+   ],
+   "claimed": "t6s"
+  },
+  {
+   "name": "Freesound",
+   "url": "https://freesound.org/people/{username}/",
+   "check_type": "status_code",
+   "rank": 4559,
+   "claimed": "blue"
+  },
+  {
+   "name": "Kongregate",
+   "url": "https://www.kongregate.com/accounts/{username}",
+   "check_type": "message",
+   "rank": 4591,
+   "absence": [
+    "Sorry, no account with that name was found."
+   ],
+   "regex_check": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Pikabu",
+   "url": "https://pikabu.ru/@{username}",
+   "check_type": "status_code",
+   "rank": 4911,
+   "claimed": "blue"
+  },
+  {
+   "name": "Boosty",
+   "url": "https://boosty.to/{username}",
+   "check_type": "message",
+   "rank": 5124,
+   "url_probe": "https://api.boosty.to/v1/blog/{username}",
+   "presence": [
+    "\"id\":"
+   ],
+   "absence": [
+    "blog_not_found"
+   ],
+   "claimed": "soxoj"
+  },
+  {
+   "name": "Soup",
+   "url": "https://www.soup.io/author/{username}",
+   "check_type": "response_url",
+   "rank": 5210,
+   "claimed": "cristina"
+  },
+  {
+   "name": "Hackster",
+   "url": "https://www.hackster.io/{username}",
+   "check_type": "status_code",
+   "rank": 5250,
+   "claimed": "blue"
+  },
+  {
+   "name": "Fur Affinity",
+   "url": "https://www.furaffinity.net/gallery/{username}",
+   "check_type": "message",
+   "rank": 5507,
+   "presence": [
+    "og:title",
+    "display:flex",
+    "user-title",
+    " /><i title=",
+    "Beach Day"
+   ],
+   "absence": [
+    ">The username ",
+    " could not be found.</div>",
+    "standardpage",
+    "redirect-message",
+    "section-body alignleft"
+   ],
+   "claimed": "astrid7"
+  },
+  {
+   "name": "ItemFix",
+   "url": "https://www.itemfix.com/c/{username}",
+   "check_type": "message",
+   "rank": 5611,
+   "presence": [
+    "user_token"
+   ],
+   "absence": [
+    "<title>ItemFix - Channel: </title>"
+   ],
+   "claimed": "William_Pickton"
+  },
+  {
+   "name": "Carbonmade",
+   "url": "https://{username}.carbonmade.com",
+   "check_type": "response_url",
+   "rank": 5687,
+   "claimed": "jenny"
+  },
+  {
+   "name": "Audiojungle",
+   "url": "https://audiojungle.net/user/{username}",
+   "check_type": "status_code",
+   "rank": 5941,
+   "regex_check": "^[a-zA-Z0-9_]+$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Hackerrank",
+   "url": "https://www.hackerrank.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 6003,
+   "url_probe": "https://www.hackerrank.com/rest/contests/master/hackers/{username}/profile",
+   "regex_check": "^[^\\.]+$",
+   "claimed": "uheara_konen"
+  },
+  {
+   "name": "eBaumsWorld",
+   "url": "https://www.ebaumsworld.com/user/profile/{username}",
+   "check_type": "status_code",
+   "rank": 6037,
+   "claimed": "adam"
+  },
+  {
+   "name": "Minds",
+   "url": "https://www.minds.com/{username}",
+   "check_type": "message",
+   "rank": 6295,
+   "url_probe": "https://www.minds.com/api/v1/channel/{username}",
+   "presence": [
+    "\"status\":\"success\""
+   ],
+   "absence": [
+    "ChannelNotFoundException"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Velog",
+   "url": "https://velog.io/@{username}/posts",
+   "check_type": "status_code",
+   "rank": 6440,
+   "claimed": "qlgks1"
+  },
+  {
+   "name": "domestika.org",
+   "url": "https://www.domestika.org/{username}",
+   "check_type": "status_code",
+   "rank": 6479,
+   "claimed": "zenzuke"
+  },
+  {
+   "name": "Star Citizen",
+   "url": "https://robertsspaceindustries.com/citizens/{username}",
+   "check_type": "status_code",
+   "rank": 6720,
+   "claimed": "blue"
+  },
+  {
+   "name": "Star Citizens Community",
+   "url": "https://robertsspaceindustries.com/community-hub/user/{username}",
+   "check_type": "status_code",
+   "rank": 6720,
+   "claimed": "SentinelTheFirst"
+  },
+  {
+   "name": "Kwork",
+   "url": "https://kwork.ru/user/{username}",
+   "check_type": "status_code",
+   "rank": 6852,
+   "claimed": "blue"
+  },
+  {
+   "name": "Jigsawplanet",
+   "url": "https://www.jigsawplanet.com/{username}",
+   "check_type": "status_code",
+   "rank": 6928,
+   "claimed": "adam"
+  },
+  {
+   "name": "lnk.bio",
+   "url": "https://lnk.bio/{username}",
+   "check_type": "message",
+   "rank": 7152,
+   "presence": [
+    "data-username"
+   ],
+   "absence": [
+    "Not Found - Lnk.Bio"
+   ],
+   "claimed": "tamirawill"
+  },
+  {
+   "name": "Memrise",
+   "url": "https://www.memrise.com/user/{username}/",
+   "check_type": "status_code",
+   "rank": 7331,
+   "claimed": "blue"
+  },
+  {
+   "name": "Americanthinker",
+   "url": "https://www.americanthinker.com/author/{username}/",
+   "check_type": "message",
+   "rank": 7519,
+   "presence": [
+    "Articles:"
+   ],
+   "absence": [
+    "<title>American Thinker</title>"
+   ],
+   "claimed": "monicashowalter"
+  },
+  {
+   "name": "RubyGems",
+   "url": "https://rubygems.org/profiles/{username}",
+   "check_type": "status_code",
+   "rank": 7555,
+   "claimed": "blue"
+  },
+  {
+   "name": "WebNode",
+   "url": "https://{username}.webnode.cz/",
+   "check_type": "status_code",
+   "rank": 7590,
+   "regex_check": "^[^\\.]+$",
+   "claimed": "radkabalcarova"
+  },
+  {
+   "name": "TheOdysseyOnline",
+   "url": "https://www.theodysseyonline.com/user/@{username}",
+   "check_type": "status_code",
+   "rank": 7674,
+   "claimed": "ariellelewis"
+  },
+  {
+   "name": "mssg.me",
+   "url": "https://mssg.me/{username}",
+   "check_type": "status_code",
+   "rank": 7736,
+   "claimed": "siamparagon"
+  },
+  {
+   "name": "Picsart",
+   "url": "https://picsart.com/u/{username}",
+   "check_type": "message",
+   "rank": 8046,
+   "url_probe": "https://api.picsart.com/users/show/{username}.json",
+   "presence": [
+    "\"status\":\"success\""
+   ],
+   "absence": [
+    "user_not_found"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Fotki",
+   "url": "https://members.fotki.com/{username}/about/",
+   "check_type": "message",
+   "rank": 8247,
+   "presence": [
+    "profile-cities",
+    "profile-friends",
+    "profile-aboutme",
+    "profile-country",
+    "user_profile_info"
+   ],
+   "absence": [
+    "'404 - Member Not Found'"
+   ],
+   "headers": {
+    "User-Agent": "curl/8.7.1"
+   },
+   "claimed": "BambooMary"
+  },
+  {
+   "name": "Lesswrong",
+   "url": "https://www.lesswrong.com/users/@{username}",
+   "check_type": "message",
+   "rank": 8300,
+   "url_probe": "https://www.lesswrong.com/graphql?query=%7B%20user(input%3A%20%7Bselector%3A%20%7Bslug%3A%20%22{username}%22%7D%7D)%20%7B%20result%20%7B%20displayName%20%7D%20%7D%20%7D",
+   "presence": [
+    "displayName"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Paltalk",
+   "url": "https://www.paltalk.com/people/users/{username}",
+   "check_type": "message",
+   "rank": 8414,
+   "presence": [
+    "\"profileData\":{\"uid\""
+   ],
+   "absence": [
+    "\"profileData\":{}"
+   ],
+   "claimed": "red"
+  },
+  {
+   "name": "NICommunityForum",
+   "url": "https://community.native-instruments.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 8514,
+   "claimed": "blue"
+  },
+  {
+   "name": "Ccm",
+   "url": "https://ccm.net/profile/user/{username}",
+   "check_type": "status_code",
+   "rank": 8568,
+   "claimed": "adam"
+  },
+  {
+   "name": "VideoHive",
+   "url": "https://videohive.net/user/{username}",
+   "check_type": "message",
+   "rank": 8681,
+   "presence": [
+    "user-info",
+    "user-info__badges"
+   ],
+   "absence": [
+    "Page Not Found | VideoHive"
+   ],
+   "claimed": "theabbie"
+  },
+  {
+   "name": "Clubhouse",
+   "url": "https://www.clubhouse.com/@{username}",
+   "check_type": "status_code",
+   "rank": 8956,
+   "claimed": "waniathar"
+  },
+  {
+   "name": "Proza.ru",
+   "url": "https://www.proza.ru/avtor/{username}",
+   "check_type": "message",
+   "rank": 8957,
+   "absence": [
+    "Автор не найден"
+   ],
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "gpola"
+  },
+  {
+   "name": "xenforo.com",
+   "url": "https://xenforo.com/community//members/?username={username}",
+   "check_type": "message",
+   "rank": 8976,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "Polymarket",
+   "url": "https://polymarket.com/@{username}",
+   "check_type": "status_code",
+   "rank": 9166,
+   "claimed": "shayne"
+  },
+  {
+   "name": "write.as",
+   "url": "https://write.as/{username}",
+   "check_type": "status_code",
+   "rank": 9304,
+   "claimed": "pylapp"
+  },
+  {
+   "name": "Warrior Forum",
+   "url": "https://www.warriorforum.com/members/{username}.html",
+   "check_type": "status_code",
+   "rank": 9592,
+   "claimed": "blue"
+  },
+  {
+   "name": "are.na",
+   "url": "https://www.are.na/{username}",
+   "check_type": "status_code",
+   "rank": 9659,
+   "claimed": "nate-cassel"
+  },
+  {
+   "name": "Mstdn.social",
+   "url": "https://mstdn.social/@{username}",
+   "check_type": "status_code",
+   "rank": 9690,
+   "url_probe": "https://mstdn.social/api/v1/accounts/lookup?acct={username}",
+   "claimed": "MagicLike"
+  },
+  {
+   "name": "Wykop",
+   "url": "https://www.wykop.pl/ludzie/{username}/",
+   "check_type": "status_code",
+   "rank": 9735,
+   "claimed": "adam"
+  },
+  {
+   "name": "ResidentAdvisor",
+   "url": "https://www.residentadvisor.net/profile/{username}",
+   "check_type": "message",
+   "rank": 9903,
+   "presence": [
+    "· Profile ⟋ RA</title>"
+   ],
+   "claimed": "uncle_ohm"
+  },
+  {
+   "name": "Stihi.ru",
+   "url": "https://www.stihi.ru/avtor/{username}",
+   "check_type": "message",
+   "rank": 10303,
+   "absence": [
+    "Автор не найден"
+   ],
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Rarible",
+   "url": "https://rarible.com/{username}",
+   "check_type": "message",
+   "rank": 10915,
+   "url_probe": "https://rarible.com/marketplace/api/v4/urls/{username}",
+   "presence": [
+    "\"type\":\"USER\""
+   ],
+   "absence": [
+    "Page Not Found"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "LiveLib",
+   "url": "https://www.livelib.ru/reader/{username}",
+   "check_type": "status_code",
+   "rank": 11407,
+   "headers": {
+    "User-Agent": ""
+   },
+   "claimed": "blue"
+  },
+  {
+   "name": "Aufeminin",
+   "url": "https://www.aufeminin.com/profile/{username}",
+   "check_type": "response_url",
+   "rank": 11718,
+   "claimed": "adam"
+  },
+  {
+   "name": "Coderwall",
+   "url": "https://coderwall.com/{username}",
+   "check_type": "message",
+   "rank": 12011,
+   "absence": [
+    "404! Our feels when that url is used"
+   ],
+   "regex_check": "^[^\\.]+$",
+   "claimed": "jenny"
+  },
+  {
+   "name": "Otzovik",
+   "url": "https://otzovik.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 12127,
+   "claimed": "blue"
+  },
+  {
+   "name": "Codementor",
+   "url": "https://www.codementor.io/@{username}",
+   "check_type": "message",
+   "rank": 12757,
+   "presence": [
+    "<div class=\"title\">"
+   ],
+   "absence": [
+    "Adapted from"
+   ],
+   "claimed": "arjunmenon"
+  },
+  {
+   "name": "N4g",
+   "url": "https://n4g.com/user/home/{username}",
+   "check_type": "status_code",
+   "rank": 12848,
+   "claimed": "adam"
+  },
+  {
+   "name": "pixelfed.social",
+   "url": "https://pixelfed.social/{username}/",
+   "check_type": "status_code",
+   "rank": 12996,
+   "claimed": "pylapp"
+  },
+  {
+   "name": "Listal",
+   "url": "https://{username}.listal.com/",
+   "check_type": "response_url",
+   "rank": 13865,
+   "claimed": "adam"
+  },
+  {
+   "name": "Spatial",
+   "url": "https://www.spatial.io/@{username}",
+   "check_type": "status_code",
+   "rank": 14163,
+   "claimed": "rammy"
+  },
+  {
+   "name": "NN.RU",
+   "url": "https://{username}.www.nn.ru/",
+   "check_type": "status_code",
+   "rank": 14174,
+   "regex_check": "^[^\\.]+$",
+   "claimed": "blue"
+  },
+  {
+   "name": "Paragraph",
+   "url": "https://paragraph.com/@{username}",
+   "check_type": "status_code",
+   "rank": 14178,
+   "url_probe": "https://paragraph.com/api/blogs/@{username}",
+   "claimed": "vitalik"
+  },
+  {
+   "name": "mastodon.social",
+   "url": "https://mastodon.social/@{username}",
+   "check_type": "status_code",
+   "rank": 14296,
+   "url_probe": "https://mastodon.social/api/v1/accounts/lookup?acct={username}",
+   "regex_check": "^[a-zA-Z0-9_]+$",
+   "claimed": "Gargron"
+  },
+  {
+   "name": "Mydramalist",
+   "url": "https://www.mydramalist.com/profile/{username}",
+   "check_type": "message",
+   "rank": 14965,
+   "absence": [
+    "The requested page was not found"
+   ],
+   "claimed": "elhadidy12398"
+  },
+  {
+   "name": "Vivino",
+   "url": "https://www.vivino.com/users/{username}",
+   "check_type": "status_code",
+   "rank": 14969,
+   "url_probe": "https://api.vivino.com/users/{username}",
+   "claimed": "adam"
+  },
+  {
+   "name": "Thechive",
+   "url": "https://thechive.com/author/{username}",
+   "check_type": "message",
+   "rank": 15153,
+   "presence": [
+    "Posts By"
+   ],
+   "absence": [
+    "Find something else."
+   ],
+   "claimed": "bhgilliland"
+  },
+  {
+   "name": "Goldderby",
+   "url": "https://www.goldderby.com/members/{username}/",
+   "check_type": "status_code",
+   "rank": 15228,
+   "claimed": "dakardii"
+  },
+  {
+   "name": "Acomics",
+   "url": "https://acomics.ru/-{username}",
+   "check_type": "status_code",
+   "rank": 15274,
+   "claimed": "Garage"
+  },
+  {
+   "name": "Akniga",
+   "url": "https://akniga.org/profile/{username}",
+   "check_type": "status_code",
+   "rank": 17041,
+   "claimed": "blue"
+  },
+  {
+   "name": "Brusheezy",
+   "url": "https://www.brusheezy.com/members/{username}",
+   "check_type": "message",
+   "rank": 17263,
+   "presence": [
+    "canonical\" href=\"https://www.brusheezy.com/members/"
+   ],
+   "claimed": "artistmef"
+  },
+  {
+   "name": "Advego",
+   "url": "https://advego.com/profile/{username}/author/",
+   "check_type": "status_code",
+   "rank": 17816,
+   "claimed": "Competitor"
+  },
+  {
+   "name": "codeforces.com",
+   "url": "http://codeforces.com/profile/{username}",
+   "check_type": "message",
+   "rank": 18436,
+   "presence": [
+    "Contest rating"
+   ],
+   "errors": {
+    "The page is temporarily blocked by administrator.": "IP ban"
+   },
+   "claimed": "alex"
+  },
+  {
+   "name": "Codechef",
+   "url": "https://www.codechef.com/users/{username}",
+   "check_type": "response_url",
+   "rank": 18520,
+   "claimed": "blue"
+  },
+  {
+   "name": "Open Game Art",
+   "url": "https://opengameart.org/users/{username}",
+   "check_type": "status_code",
+   "rank": 18859,
+   "claimed": "ski"
+  },
+  {
+   "name": "Lobsters",
+   "url": "https://lobste.rs/u/{username}",
+   "check_type": "status_code",
+   "rank": 18900,
+   "regex_check": "[A-Za-z0-9][A-Za-z0-9_-]{0,24}",
+   "claimed": "jcs"
+  },
+  {
+   "name": "iFunny",
+   "url": "https://www.ifunny.co/user/{username}",
+   "check_type": "message",
+   "rank": 19237,
+   "presence": [
+    "subscribers"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Topcoder",
+   "url": "https://profiles.topcoder.com/{username}/",
+   "check_type": "status_code",
+   "rank": 19326,
+   "url_probe": "https://api.topcoder.com/v6/members/{username}",
+   "regex_check": "^[a-zA-Z0-9_.]+$",
+   "claimed": "USER"
+  },
+  {
+   "name": "picturepush.com",
+   "url": "https://{username}.picturepush.com/",
+   "check_type": "message",
+   "rank": 19600,
+   "presence": [
+    "loginname"
+   ],
+   "absence": [
+    ".stage img"
+   ],
+   "claimed": "yoskark"
+  },
+  {
+   "name": "Codewars",
+   "url": "https://www.codewars.com/users/{username}",
+   "check_type": "status_code",
+   "rank": 20285,
+   "claimed": "example"
+  },
+  {
+   "name": "Tiendanube",
+   "url": "https://{username}.mitiendanube.com/",
+   "check_type": "status_code",
+   "rank": 20397,
+   "claimed": "blue"
+  },
+  {
+   "name": "{username}.portfoliobox.net",
+   "url": "https://{username}.portfoliobox.net",
+   "check_type": "status_code",
+   "rank": 20421,
+   "claimed": "red"
+  },
+  {
+   "name": "Dcinside",
+   "url": "https://gallog.dcinside.com/{username}",
+   "check_type": "status_code",
+   "rank": 20572,
+   "claimed": "anrbrb"
+  },
+  {
+   "name": "PromoDJ",
+   "url": "http://promodj.com/{username}",
+   "check_type": "status_code",
+   "rank": 21254,
+   "claimed": "blue"
+  },
+  {
+   "name": "shor.by",
+   "url": "https://shor.by/{username}",
+   "check_type": "message",
+   "rank": 21510,
+   "presence": [
+    "og:title"
+   ],
+   "absence": [
+    "page-not-found"
+   ],
+   "claimed": "0gs0"
+  },
+  {
+   "name": "Linuxfr",
+   "url": "https://linuxfr.org/users/{username}",
+   "check_type": "status_code",
+   "rank": 22766,
+   "claimed": "adam"
+  },
+  {
+   "name": "3dtoday",
+   "url": "https://3dtoday.ru/blogs/{username}",
+   "check_type": "response_url",
+   "rank": 23049,
+   "claimed": "adam"
+  },
+  {
+   "name": "gloria.tv",
+   "url": "https://gloria.tv/{username}",
+   "check_type": "status_code",
+   "rank": 23644,
+   "claimed": "blue"
+  },
+  {
+   "name": "Ficwad",
+   "url": "https://ficwad.com/a/{username}/favorites/authors",
+   "check_type": "status_code",
+   "rank": 23930,
+   "claimed": "adam"
+  },
+  {
+   "name": "xakep.ru",
+   "url": "https://xakep.ru/author/{username}/",
+   "check_type": "status_code",
+   "rank": 24154,
+   "claimed": "alex"
+  },
+  {
+   "name": "Tripline",
+   "url": "https://www.tripline.net/{username}",
+   "check_type": "status_code",
+   "rank": 24541,
+   "claimed": "adam"
+  },
+  {
+   "name": "Dealabs",
+   "url": "https://www.dealabs.com/profile/{username}",
+   "check_type": "message",
+   "rank": 24603,
+   "absence": [
+    "La page que vous essayez"
+   ],
+   "regex_check": "[a-z0-9]{4,16}",
+   "claimed": "blue"
+  },
+  {
+   "name": "freelance.ru",
+   "url": "https://freelance.ru/{username}/",
+   "check_type": "status_code",
+   "rank": 25207,
+   "claimed": "alex"
+  },
+  {
+   "name": "Wishlistr",
+   "url": "https://www.wishlistr.com/{username}/",
+   "check_type": "message",
+   "rank": 25355,
+   "absence": [
+    "Page Not Found"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "mel.fm",
+   "url": "https://mel.fm/blog/{username}",
+   "check_type": "status_code",
+   "rank": 26031,
+   "claimed": "sos-detskie-derevni"
+  },
+  {
+   "name": "DeepDreamGenerator",
+   "url": "https://deepdreamgenerator.com/u/{username}",
+   "check_type": "message",
+   "rank": 26335,
+   "presence": [
+    "user-name",
+    "profile-cover",
+    "user-info"
+   ],
+   "absence": [
+    "Page not found"
+   ],
+   "claimed": "beasternchen"
+  },
+  {
+   "name": "mastodon.cloud",
+   "url": "https://mastodon.cloud/@{username}",
+   "check_type": "status_code",
+   "rank": 26494,
+   "url_probe": "https://mastodon.cloud/api/v1/accounts/lookup?acct={username}",
+   "regex_check": "^[a-zA-Z0-9_]+$",
+   "claimed": "TheAdmin"
+  },
+  {
+   "name": "1x",
+   "url": "https://1x.com/{username}",
+   "check_type": "message",
+   "rank": 26647,
+   "presence": [
+    " onload=",
+    "photos-feed",
+    "gallery-loadmore",
+    "lm_mode",
+    "create_exhibition_name"
+   ],
+   "absence": [
+    "1x.com • In Pursuit of the Sublime",
+    " >404</div>"
+   ],
+   "claimed": "michaelafiresova"
+  },
+  {
+   "name": "PatientsLikeMe",
+   "url": "https://www.patientslikeme.com/members/{username}",
+   "check_type": "response_url",
+   "rank": 26919,
+   "claimed": "fabu007"
+  },
+  {
+   "name": "Samlib",
+   "url": "http://samlib.ru/e/{username}",
+   "check_type": "status_code",
+   "rank": 27651,
+   "claimed": "e_melokumow"
+  },
+  {
+   "name": "goodgame.ru",
+   "url": "https://goodgame.ru/channel/{username}",
+   "check_type": "message",
+   "rank": 27858,
+   "presence": [
+    "name",
+    "streamer_name",
+    "user",
+    " role=",
+    "streamer"
+   ],
+   "absence": [
+    "not-found-wrap",
+    "images/404.gif"
+   ],
+   "claimed": "Nikichar"
+  },
+  {
+   "name": "many.link",
+   "url": "https://many.link/{username}",
+   "check_type": "message",
+   "rank": 28187,
+   "presence": [
+    "og:site_name"
+   ],
+   "absence": [
+    "Couldn't find a profile"
+   ],
+   "claimed": "lartisto"
+  },
+  {
+   "name": "sessionize.com",
+   "url": "https://sessionize.com/{username}/",
+   "check_type": "message",
+   "rank": 28714,
+   "presence": [
+    "role=",
+    "filter"
+   ],
+   "absence": [
+    "Page Not Found</h3>"
+   ],
+   "claimed": "theabbie"
+  },
+  {
+   "name": "Androidforums",
+   "url": "https://androidforums.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 28801,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "Studfile",
+   "url": "https://studfile.net/users/{username}/",
+   "check_type": "response_url",
+   "rank": 29071,
+   "regex_check": "^[^-\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "adam"
+  },
+  {
+   "name": "osu!",
+   "url": "https://osu.ppy.sh/users/{username}",
+   "check_type": "status_code",
+   "rank": 29272,
+   "claimed": "blue"
+  },
+  {
+   "name": "Mydealz",
+   "url": "https://www.mydealz.de/profile/{username}",
+   "check_type": "status_code",
+   "rank": 29290,
+   "claimed": "blue"
+  },
+  {
+   "name": "FL.ru",
+   "url": "https://www.fl.ru/users/{username}",
+   "check_type": "message",
+   "rank": 29699,
+   "presence": [
+    "profile_header--info"
+   ],
+   "absence": [
+    "Страница не найдена"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "YouPic",
+   "url": "https://youpic.com/photographer/{username}/",
+   "check_type": "status_code",
+   "rank": 30447,
+   "claimed": "blue"
+  },
+  {
+   "name": "partnerkin.com",
+   "url": "https://partnerkin.com/user/{username}",
+   "check_type": "message",
+   "rank": 31738,
+   "presence": [
+    "<title>Профиль"
+   ],
+   "absence": [
+    "<title></title>"
+   ],
+   "claimed": "test"
+  },
+  {
+   "name": "Antiquers",
+   "url": "https://www.antiquers.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 33187,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "ManifoldMarkets",
+   "url": "https://manifold.markets/{username}",
+   "check_type": "message",
+   "rank": 33862,
+   "presence": [
+    ">Comments</div>",
+    ">Balance log</div>",
+    ">Payments</div>",
+    "@<!-- -->{username}<!-- --> </span>"
+   ],
+   "absence": [
+    "404: Oops!",
+    "Less than 1% chance anything exists at this url."
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Mamot",
+   "url": "https://mamot.fr/@{username}",
+   "check_type": "status_code",
+   "rank": 33950,
+   "url_probe": "https://mamot.fr/api/v1/accounts/lookup?acct={username}",
+   "claimed": "LaQuadrature"
+  },
+  {
+   "name": "stopgame.ru",
+   "url": "https://stopgame.ru/user/{username}",
+   "check_type": "status_code",
+   "rank": 34359,
+   "claimed": "DikUln"
+  },
+  {
+   "name": "Skyblock",
+   "url": "https://skyblock.net/members/?username={username}",
+   "check_type": "message",
+   "rank": 34876,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "Iphones.ru",
+   "url": "https://www.iphones.ru/iNotes/author/{username}?profile=1",
+   "check_type": "status_code",
+   "rank": 35058,
+   "claimed": "adam"
+  },
+  {
+   "name": "Illustrators",
+   "url": "https://illustrators.ru/users/{username}",
+   "check_type": "status_code",
+   "rank": 35752,
+   "claimed": "red"
+  },
+  {
+   "name": "Spletnik",
+   "url": "https://spletnik.ru/user/{username}",
+   "check_type": "status_code",
+   "rank": 37065,
+   "claimed": "blue"
+  },
+  {
+   "name": "hi-news.ru",
+   "url": "https://hi-news.ru/author/{username}",
+   "check_type": "status_code",
+   "rank": 37950,
+   "claimed": "admin"
+  },
+  {
+   "name": "LOR",
+   "url": "https://www.linux.org.ru/people/{username}/profile",
+   "check_type": "status_code",
+   "rank": 41204,
+   "claimed": "red"
+  },
+  {
+   "name": "Mouthshut",
+   "url": "https://www.mouthshut.com/{username}",
+   "check_type": "response_url",
+   "rank": 41541,
+   "claimed": "adam"
+  },
+  {
+   "name": "fediverse.party",
+   "url": "https://fediverse.party/en/{username}",
+   "check_type": "message",
+   "rank": 44778,
+   "presence": [
+    "mastodon-share",
+    "mastodon",
+    "socialhome",
+    "></label> <input name=",
+    "diaspora"
+   ],
+   "absence": [
+    "<title>Fediverse.Party - explore federated networks</title>",
+    " error__page"
+   ],
+   "regex_check": "^[a-zA-Z0-9_]+$",
+   "claimed": "misskey"
+  },
+  {
+   "name": "clarity.fm",
+   "url": "https://clarity.fm/{username}",
+   "check_type": "message",
+   "rank": 44945,
+   "presence": [
+    "user-profile-image"
+   ],
+   "absence": [
+    "On Demand Business Advice</title"
+   ],
+   "claimed": "theabbie"
+  },
+  {
+   "name": "smart-lab.ru",
+   "url": "https://smart-lab.ru/profile/{username}/",
+   "check_type": "message",
+   "rank": 45069,
+   "absence": [
+    "<title>404"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Weblancer",
+   "url": "https://www.weblancer.net/users/{username}/",
+   "check_type": "response_url",
+   "rank": 45200,
+   "claimed": "alraa"
+  },
+  {
+   "name": "Sugoidesu",
+   "url": "https://sugoidesu.net/members/?username={username}",
+   "check_type": "message",
+   "rank": 45578,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "profi.ru",
+   "url": "https://profi.ru/profile/{username}/",
+   "check_type": "message",
+   "rank": 45782,
+   "presence": [
+    "PROFILE",
+    "profiles",
+    "profileOIO",
+    "fullProfile",
+    "profileUGC2"
+   ],
+   "absence": [
+    "page-404__paragraph"
+   ],
+   "claimed": "EgorovRV"
+  },
+  {
+   "name": "Framapiaf",
+   "url": "https://framapiaf.org/@{username}",
+   "check_type": "status_code",
+   "rank": 46767,
+   "url_probe": "https://framapiaf.org/api/v1/accounts/lookup?acct={username}",
+   "claimed": "pylapp"
+  },
+  {
+   "name": "Zora",
+   "url": "https://zora.co/@{username}",
+   "check_type": "status_code",
+   "rank": 47291,
+   "claimed": "jacob"
+  },
+  {
+   "name": "DonationsAlerts",
+   "url": "https://www.donationalerts.com/r/{username}",
+   "check_type": "message",
+   "rank": 47808,
+   "absence": [
+    "/img/404.svg"
+   ],
+   "claimed": "r3dhunt"
+  },
+  {
+   "name": "Ani World",
+   "url": "https://aniworld.to/user/profil/{username}",
+   "check_type": "message",
+   "rank": 49310,
+   "absence": [
+    "Dieses Profil ist nicht verfügbar"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Oper",
+   "url": "https://www.oper.ru/visitors/info.php?t={username}",
+   "check_type": "message",
+   "rank": 49842,
+   "absence": [
+    "Нет такого пользователя"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "mastodon.xyz",
+   "url": "https://mastodon.xyz/@{username}",
+   "check_type": "status_code",
+   "rank": 50057,
+   "url_probe": "https://mastodon.xyz/api/v1/accounts/lookup?acct={username}",
+   "regex_check": "^[a-zA-Z0-9_]+$",
+   "claimed": "TheKinrar"
+  },
+  {
+   "name": "smokingmeatforums.com",
+   "url": "https://smokingmeatforums.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 52187,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "author.today",
+   "url": "https://author.today/u/{username}",
+   "check_type": "status_code",
+   "rank": 54072,
+   "claimed": "adam"
+  },
+  {
+   "name": "gcup.ru",
+   "url": "http://gcup.ru/index/8-0-{username}",
+   "check_type": "message",
+   "rank": 54324,
+   "presence": [
+    "udtlb\">Пользователь:</div>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста войдите на сайт как пользователь.",
+    "<center><b>Личные данные</b>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста, войдите на сайт как пользователь.",
+    "<img alt=\"\" name=\"rankimg\" border=\"0\" src=\"/.s/rnk/",
+    "Гостям запрещено просматривать персональные страницы пользователей.",
+    "profile-section-name",
+    "webo4ka_dannii",
+    "Дата регистрации"
+   ],
+   "absence": [
+    "<title>HTTP 404",
+    "Пользователь не найден"
+   ],
+   "regex_check": "^[^\\.\\-]+$",
+   "claimed": "alex"
+  },
+  {
+   "name": "Soop",
+   "url": "https://www.sooplive.co.kr/station/{username}",
+   "check_type": "status_code",
+   "rank": 54981,
+   "url_probe": "https://api-channel.sooplive.co.kr/v1.1/channel/{username}/station",
+   "claimed": "udkn"
+  },
+  {
+   "name": "Atcoder",
+   "url": "https://atcoder.jp/users/{username}",
+   "check_type": "status_code",
+   "rank": 55871,
+   "claimed": "ksun48"
+  },
+  {
+   "name": "Rappad",
+   "url": "https://www.rappad.co/users/{username}",
+   "check_type": "status_code",
+   "rank": 56463,
+   "claimed": "adam"
+  },
+  {
+   "name": "Revolut.me",
+   "url": "https://revolut.me/{username}",
+   "check_type": "status_code",
+   "rank": 59646,
+   "url_probe": "https://revolut.me/api/web-profile/{username}",
+   "claimed": "adamp"
+  },
+  {
+   "name": "Ethresear",
+   "url": "https://ethresear.ch/u/{username}",
+   "check_type": "status_code",
+   "rank": 59767,
+   "url_probe": "https://ethresear.ch/u/{username}.json",
+   "claimed": "weijiekoh"
+  },
+  {
+   "name": "homebrewtalk.com",
+   "url": "https://www.homebrewtalk.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 61361,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "tfw2005.com",
+   "url": "http://www.tfw2005.com/boards//members/?username={username}",
+   "check_type": "message",
+   "rank": 61430,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "Lemmy World",
+   "url": "https://lemmy.world/u/{username}",
+   "check_type": "status_code",
+   "rank": 61746,
+   "url_probe": "https://lemmy.world/api/v3/user?username={username}",
+   "claimed": "Ruud"
+  },
+  {
+   "name": "Cent",
+   "url": "https://beta.cent.co/@{username}",
+   "check_type": "message",
+   "rank": 62477,
+   "url_probe": "https://beta.cent.co/data/user/profile?userHandles={username}",
+   "presence": [
+    "display_name"
+   ],
+   "absence": [
+    "\"results\":[]"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Vjudge",
+   "url": "https://VJudge.net/user/{username}",
+   "check_type": "status_code",
+   "rank": 62696,
+   "claimed": "tokitsukaze"
+  },
+  {
+   "name": "phpbbguru.net",
+   "url": "https://www.phpbbguru.net/community/search.php?author={username}",
+   "check_type": "message",
+   "rank": 62841,
+   "presence": [
+    "postprofile",
+    " username-coloured"
+   ],
+   "absence": [
+    "Подходящих тем или сообщений не найдено."
+   ],
+   "claimed": "alex"
+  },
+  {
+   "name": "valinor.com.br",
+   "url": "http://www.valinor.com.br/forum//members/?username={username}",
+   "check_type": "message",
+   "rank": 63474,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "Salon24.pl",
+   "url": "https://www.salon24.pl/u/{username}/",
+   "check_type": "message",
+   "rank": 64119,
+   "presence": [
+    "- salon24.pl</title>"
+   ],
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "test"
+  },
+  {
+   "name": "Ariva",
+   "url": "https://www.ariva.de/profil/{username}",
+   "check_type": "status_code",
+   "rank": 64677,
+   "claimed": "adam"
+  },
+  {
+   "name": "TheSimsResource",
+   "url": "https://www.thesimsresource.com/members/{username}/",
+   "check_type": "message",
+   "rank": 65342,
+   "presence": [
+    "class=\"profile-avatar\""
+   ],
+   "errors": {
+    "Just a moment": "Cloudflare challenge",
+    "challenges.cloudflare.com": "Cloudflare challenge"
+   },
+   "claimed": "DanSimsFantasy"
+  },
+  {
+   "name": "Vgtimes",
+   "url": "https://vgtimes.ru/user/{username}",
+   "check_type": "message",
+   "rank": 66194,
+   "presence": [
+    "user_profile"
+   ],
+   "absence": [
+    "Пользователь с таким именем не найден"
+   ],
+   "claimed": "admin"
+  },
+  {
+   "name": "Vgtimes/Games",
+   "url": "https://vgtimes.ru/games/{username}/forum/",
+   "check_type": "status_code",
+   "rank": 66194,
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "rfactor"
+  },
+  {
+   "name": "Warpcast",
+   "url": "https://warpcast.com/{username}",
+   "check_type": "status_code",
+   "rank": 67528,
+   "url_probe": "https://client.warpcast.com/v2/user-by-username?username={username}",
+   "claimed": "dwr.eth"
+  },
+  {
+   "name": "Topmate",
+   "url": "https://topmate.io/{username}",
+   "check_type": "status_code",
+   "rank": 68096,
+   "claimed": "blue"
+  },
+  {
+   "name": "devRant",
+   "url": "https://devrant.com/users/{username}",
+   "check_type": "response_url",
+   "rank": 71769,
+   "claimed": "blue"
+  },
+  {
+   "name": "Rmmedia",
+   "url": "https://rmmedia.ru/members/?username={username}",
+   "check_type": "message",
+   "rank": 72016,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "Trashbox.ru",
+   "url": "https://trashbox.ru/users/{username}",
+   "check_type": "message",
+   "rank": 72890,
+   "absence": [
+    "404 — Not found"
+   ],
+   "regex_check": "^[A-Za-z0-9_-]{3,16}$",
+   "claimed": "blue"
+  },
+  {
+   "name": "VLR",
+   "url": "https://www.vlr.gg/user/{username}",
+   "check_type": "status_code",
+   "rank": 74549,
+   "claimed": "optms"
+  },
+  {
+   "name": "HackingWithSwift",
+   "url": "https://www.hackingwithswift.com/users/{username}",
+   "check_type": "message",
+   "rank": 76169,
+   "absence": [
+    "<title>Users - Hacking with Swift</title>"
+   ],
+   "regex_check": "^[^\\.\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "davextreme"
+  },
+  {
+   "name": "Pokemon Showdown",
+   "url": "https://pokemonshowdown.com/users/{username}",
+   "check_type": "status_code",
+   "rank": 77040,
+   "claimed": "blue"
+  },
+  {
+   "name": "MoiKrug",
+   "url": "https://moikrug.ru/{username}",
+   "check_type": "status_code",
+   "rank": 78123,
+   "claimed": "marina"
+  },
+  {
+   "name": "mynickname.com",
+   "url": "https://mynickname.com/{username}",
+   "check_type": "message",
+   "rank": 80559,
+   "presence": [
+    " title=",
+    "bold",
+    "title-line",
+    "codehtml",
+    "User offline"
+   ],
+   "absence": [
+    "<h1>Error 404: Page not found</h1>",
+    "Nickname , certificate for username ",
+    "btn green",
+    "mailto:info@mynickname.com",
+    ">Register nickname</span></a></p>"
+   ],
+   "claimed": "godbrithil"
+  },
+  {
+   "name": "appleinsider.ru",
+   "url": "https://appleinsider.ru/author/{username}",
+   "check_type": "status_code",
+   "rank": 81464,
+   "claimed": "admin"
+  },
+  {
+   "name": "Suomi24",
+   "url": "https://www.suomi24.fi/profiili/{username}",
+   "check_type": "status_code",
+   "rank": 81975,
+   "claimed": "Kilgore"
+  },
+  {
+   "name": "Ethereum-magicians",
+   "url": "https://ethereum-magicians.org/u/{username}",
+   "check_type": "status_code",
+   "rank": 82176,
+   "url_probe": "https://ethereum-magicians.org/u/{username}.json",
+   "claimed": "amxx"
+  },
+  {
+   "name": "Radioscanner",
+   "url": "http://www.radioscanner.ru/forum/index.php?posterName={username}&action=search&searchGo=1",
+   "check_type": "message",
+   "rank": 84814,
+   "absence": [
+    "Ничего не найдено!"
+   ],
+   "errors": {
+    "вы можете искать не чаще, чем раз в 10 секунд": "Too many requests"
+   },
+   "claimed": "bob"
+  },
+  {
+   "name": "Cqham",
+   "url": "http://www.cqham.ru/forum/member.php?username={username}",
+   "check_type": "message",
+   "rank": 87032,
+   "absence": [
+    "Пользователь не зарегистрирован и не имеет профиля для просмотра."
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "SportsTracker",
+   "url": "https://www.sports-tracker.com/view_profile/{username}",
+   "check_type": "message",
+   "rank": 97009,
+   "url_probe": "https://api.sports-tracker.com/apiserver/v1/user/name/{username}",
+   "absence": [
+    "\"code\":\"404\""
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Crevado",
+   "url": "https://{username}.crevado.com",
+   "check_type": "status_code",
+   "rank": 101238,
+   "claimed": "blue"
+  },
+  {
+   "name": "Mylot",
+   "url": "https://www.mylot.com/{username}",
+   "check_type": "status_code",
+   "rank": 101976,
+   "claimed": "just4him"
+  },
+  {
+   "name": "E621",
+   "url": "https://e621.net/users/{username}",
+   "check_type": "message",
+   "rank": 102772,
+   "presence": [
+    "<title>  User"
+   ],
+   "absence": [
+    "<title>  Not Found"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Gvectors",
+   "url": "https://gvectors.com/forum/profile/{username}/",
+   "check_type": "status_code",
+   "rank": 103170,
+   "claimed": "adam"
+  },
+  {
+   "name": "Gingerbread",
+   "url": "https://www.gingerbread.org.uk/members/{username}/",
+   "check_type": "status_code",
+   "rank": 104557,
+   "presence": [
+    "My Profile"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "SeoClerks",
+   "url": "https://www.seoclerks.com/user/{username}",
+   "check_type": "response_url",
+   "rank": 106199,
+   "claimed": "adam"
+  },
+  {
+   "name": "CashMe",
+   "url": "https://cash.me/${username}",
+   "check_type": "status_code",
+   "rank": 106225,
+   "errors": {
+    "Cash isn't available in your country yet.": "Access denied in your country, use proxy/vpn"
+   },
+   "claimed": "Jenny"
+  },
+  {
+   "name": "mstdn.io",
+   "url": "https://mstdn.io/@{username}",
+   "check_type": "status_code",
+   "rank": 107012,
+   "url_probe": "https://mstdn.io/api/v1/accounts/lookup?acct={username}",
+   "claimed": "angristan"
+  },
+  {
+   "name": "Shazoo",
+   "url": "https://shazoo.ru/users/{username}",
+   "check_type": "status_code",
+   "rank": 108316,
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "adam"
+  },
+  {
+   "name": "Etxt",
+   "url": "https://www.etxt.ru/{username}.html",
+   "check_type": "status_code",
+   "rank": 110136,
+   "claimed": "adam"
+  },
+  {
+   "name": "Intigriti",
+   "url": "https://app.intigriti.com/profile/{username}",
+   "check_type": "message",
+   "rank": 110156,
+   "presence": [
+    "avatar-container"
+   ],
+   "absence": [
+    "We didn't find what you're looking for"
+   ],
+   "claimed": "alex"
+  },
+  {
+   "name": "7dach",
+   "url": "https://7dach.ru/profile/{username}",
+   "check_type": "status_code",
+   "rank": 113301,
+   "claimed": "adam"
+  },
+  {
+   "name": "d3",
+   "url": "https://d3.ru/user/{username}/posts",
+   "check_type": "status_code",
+   "rank": 119764,
+   "claimed": "blue"
+  },
+  {
+   "name": "YouNow",
+   "url": "https://www.younow.com/{username}/",
+   "check_type": "message",
+   "rank": 121444,
+   "url_probe": "https://api.younow.com/php/api/broadcast/info/user={username}/",
+   "absence": [
+    "No users found"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Touristlink",
+   "url": "https://www.touristlink.com/user/{username}",
+   "check_type": "message",
+   "rank": 122352,
+   "absence": [
+    "Members across the World"
+   ],
+   "claimed": "green"
+  },
+  {
+   "name": "W7forums",
+   "url": "https://www.w7forums.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 123118,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "Nick-name.ru",
+   "url": "https://nick-name.ru/nickname/{username}/",
+   "check_type": "status_code",
+   "rank": 123974,
+   "claimed": "alex"
+  },
+  {
+   "name": "Fragment",
+   "url": "https://fragment.com/username/{username}",
+   "check_type": "message",
+   "rank": 124668,
+   "presence": [
+    "tm-wallet"
+   ],
+   "absence": [
+    "Available"
+   ],
+   "claimed": "durov"
+  },
+  {
+   "name": "Old-games",
+   "url": "https://www.old-games.ru/forum/members/?username={username}",
+   "check_type": "message",
+   "rank": 133612,
+   "absence": [
+    "Указанный пользователь не найден"
+   ],
+   "claimed": "viktort"
+  },
+  {
+   "name": "Nothing Community",
+   "url": "https://nothing.community/u/{username}",
+   "check_type": "status_code",
+   "rank": 140149,
+   "claimed": "Carl"
+  },
+  {
+   "name": "Clozemaster",
+   "url": "https://www.clozemaster.com/players/{username}",
+   "check_type": "message",
+   "rank": 140746,
+   "absence": [
+    "Oh no! Player not found"
+   ],
+   "claimed": "green"
+  },
+  {
+   "name": "Vsemayki",
+   "url": "https://www.vsemayki.ru/designer/{username}",
+   "check_type": "message",
+   "rank": 147557,
+   "absence": [
+    "404 Not Found"
+   ],
+   "claimed": "alex"
+  },
+  {
+   "name": "999.md",
+   "url": "https://999.md/ru/profile/{username}",
+   "check_type": "status_code",
+   "rank": 151485,
+   "claimed": "ivanov25"
+  },
+  {
+   "name": "Hackthissite",
+   "url": "https://www.hackthissite.org/user/view/{username}",
+   "check_type": "message",
+   "rank": 153495,
+   "absence": [
+    "Cannot Retrieve Information For The Specified Username"
+   ],
+   "regex_check": "^[^\\.\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "adam"
+  },
+  {
+   "name": "Modx_pro",
+   "url": "https://modx.pro/users/{username}",
+   "check_type": "status_code",
+   "rank": 153894,
+   "claimed": "vgrish"
+  },
+  {
+   "name": "Football",
+   "url": "https://www.rusfootball.info/user/{username}/",
+   "check_type": "message",
+   "rank": 160156,
+   "presence": [
+    "class=\"userprofile\""
+   ],
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "solo87"
+  },
+  {
+   "name": "Beerintheevening",
+   "url": "http://www.beerintheevening.com/user_profile.shtml?username={username}",
+   "check_type": "message",
+   "rank": 162283,
+   "absence": [
+    "User does not exist."
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Kwejk",
+   "url": "https://kwejk.pl/uzytkownik/{username}#/tablica/",
+   "check_type": "status_code",
+   "rank": 167082,
+   "claimed": "ralia"
+  },
+  {
+   "name": "Forest",
+   "url": "https://forest.ru/forum/user/{username}/",
+   "check_type": "status_code",
+   "rank": 167973,
+   "claimed": "veter"
+  },
+  {
+   "name": "Pronouns.page",
+   "url": "https://pronouns.page/@{username}",
+   "check_type": "status_code",
+   "rank": 168784,
+   "claimed": "andrea"
+  },
+  {
+   "name": "Au",
+   "url": "https://au.ru/user/{username}/",
+   "check_type": "message",
+   "rank": 171294,
+   "absence": [
+    "<title>Пользователь не найден</title"
+   ],
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "adam"
+  },
+  {
+   "name": "programming.dev",
+   "url": "https://programming.dev/u/{username}",
+   "check_type": "status_code",
+   "rank": 172404,
+   "url_probe": "https://programming.dev/api/v3/user?username={username}",
+   "claimed": "snowe"
+  },
+  {
+   "name": "imgsrc.ru",
+   "url": "https://imgsrc.ru/main/user.php?user={username}",
+   "check_type": "response_url",
+   "rank": 173382,
+   "claimed": "blue"
+  },
+  {
+   "name": "Thebigboss",
+   "url": "http://thebigboss.org/author/{username}",
+   "check_type": "status_code",
+   "rank": 180210,
+   "claimed": "adam"
+  },
+  {
+   "name": "Listography",
+   "url": "https://listography.com/{username}",
+   "check_type": "message",
+   "rank": 181842,
+   "absence": [
+    "No such user."
+   ],
+   "regex_check": "^[^\\.\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "errors": {
+    "An error has occurred.": "Site error"
+   },
+   "claimed": "adam"
+  },
+  {
+   "name": "millerovo161.ru",
+   "url": "http://millerovo161.ru/index/8-0-{username}",
+   "check_type": "message",
+   "rank": 183554,
+   "presence": [
+    "udtlb\">Пользователь:</div>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста войдите на сайт как пользователь.",
+    "<center><b>Личные данные</b>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста, войдите на сайт как пользователь.",
+    "<img alt=\"\" name=\"rankimg\" border=\"0\" src=\"/.s/rnk/",
+    "Гостям запрещено просматривать персональные страницы пользователей.",
+    "profile-section-name",
+    "webo4ka_dannii",
+    "Дата регистрации"
+   ],
+   "absence": [
+    "<title>HTTP 404",
+    "Пользователь не найден"
+   ],
+   "regex_check": "^[^\\.\\-]+$",
+   "claimed": "alex"
+  },
+  {
+   "name": "Shikimori",
+   "url": "https://shikimori.one/{username}",
+   "check_type": "status_code",
+   "rank": 183771,
+   "claimed": "adam"
+  },
+  {
+   "name": "Elixirforum",
+   "url": "https://elixirforum.com/u/{username}/summary",
+   "check_type": "message",
+   "rank": 188233,
+   "presence": [
+    "<meta name=\"generator\" content=\"Discourse"
+   ],
+   "absence": [
+    "Oops! That page doesn’t exist or is private.",
+    "wrap not-found-container"
+   ],
+   "claimed": "clmay"
+  },
+  {
+   "name": "Kosmetista",
+   "url": "https://kosmetista.ru/profile/{username}/",
+   "check_type": "message",
+   "rank": 197894,
+   "presence": [
+    "profile-content"
+   ],
+   "absence": [
+    "Упс! Вот это поворот!"
+   ],
+   "claimed": "red"
+  },
+  {
+   "name": "Runitonce",
+   "url": "https://www.runitonce.com/users/{username}/",
+   "check_type": "response_url",
+   "rank": 203000,
+   "claimed": "adam"
+  },
+  {
+   "name": "Postila",
+   "url": "https://postila.ru/{username}",
+   "check_type": "status_code",
+   "rank": 205148,
+   "claimed": "adam"
+  },
+  {
+   "name": "Redcafe",
+   "url": "https://www.redcafe.net/members/?username={username}",
+   "check_type": "message",
+   "rank": 210969,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "Showme",
+   "url": "https://www.showme.com/{username}",
+   "check_type": "status_code",
+   "rank": 212359,
+   "claimed": "adam"
+  },
+  {
+   "name": "Lori",
+   "url": "https://lori.ru/{username}",
+   "check_type": "status_code",
+   "rank": 213812,
+   "claimed": "Mishkova"
+  },
+  {
+   "name": "Pregame",
+   "url": "https://pregame.com/members/{username}",
+   "check_type": "response_url",
+   "rank": 213813,
+   "claimed": "adam"
+  },
+  {
+   "name": "Stereo",
+   "url": "https://stereo.ru/users/@{username}",
+   "check_type": "status_code",
+   "rank": 213854,
+   "regex_check": "^[^\\.]+$",
+   "claimed": "Yamiha"
+  },
+  {
+   "name": "Pr0gramm",
+   "url": "https://pr0gramm.com/api/profile/info?name={username}",
+   "check_type": "status_code",
+   "rank": 215077,
+   "claimed": "cha0s"
+  },
+  {
+   "name": "Office-forums",
+   "url": "https://www.office-forums.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 215095,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "Bikepost",
+   "url": "https://bikepost.ru/profile/{username}",
+   "check_type": "status_code",
+   "rank": 219746,
+   "claimed": "adam"
+  },
+  {
+   "name": "4stor",
+   "url": "https://4stor.ru/user/{username}",
+   "check_type": "status_code",
+   "rank": 223005,
+   "claimed": "adam"
+  },
+  {
+   "name": "Mamuli",
+   "url": "https://mamuli.club/profile/{username}",
+   "check_type": "message",
+   "rank": 224558,
+   "presence": [
+    "user-profile"
+   ],
+   "claimed": "Milypa"
+  },
+  {
+   "name": "Pentester Lab",
+   "url": "https://pentesterlab.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 224948,
+   "regex_check": "^[\\w]{4,30}$",
+   "claimed": "0day"
+  },
+  {
+   "name": "PentesterLab",
+   "url": "https://pentesterlab.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 224948,
+   "claimed": "admin"
+  },
+  {
+   "name": "Snooth",
+   "url": "https://www.snooth.com/author/{username}/",
+   "check_type": "message",
+   "rank": 225759,
+   "presence": [
+    "content=\"https://www.snooth.com/author/"
+   ],
+   "absence": [
+    "<title>Page not found"
+   ],
+   "claimed": "joshua"
+  },
+  {
+   "name": "Hpc",
+   "url": "https://hpc.ru/board/search.php?keywords=&terms=all&author={username}",
+   "check_type": "message",
+   "rank": 229603,
+   "absence": [
+    "Подходящих тем или сообщений не найдено."
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Ruby-forum",
+   "url": "https://www.ruby-forum.com/u/{username}",
+   "check_type": "status_code",
+   "rank": 232048,
+   "url_probe": "https://www.ruby-forum.com/u/{username}.json",
+   "claimed": "tomconnolly"
+  },
+  {
+   "name": "HSX",
+   "url": "https://www.hsx.com/profile/{username}",
+   "check_type": "message",
+   "rank": 233798,
+   "presence": [
+    "profile-info"
+   ],
+   "absence": [
+    "reg-container"
+   ],
+   "claimed": "petepetit"
+  },
+  {
+   "name": "Blipfoto",
+   "url": "https://www.blipfoto.com/{username}",
+   "check_type": "message",
+   "rank": 235440,
+   "presence": [
+    "biography",
+    "biography-full",
+    "profile-sidebar",
+    "profile-content",
+    "state"
+   ],
+   "absence": [
+    "<title>Your photo journal | Blipfoto</title>"
+   ],
+   "regex_check": "^[^\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "Wildstar"
+  },
+  {
+   "name": "ww2aircraft.net",
+   "url": "https://ww2aircraft.net/forum//members/?username={username}",
+   "check_type": "message",
+   "rank": 241845,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "Tellonym.me",
+   "url": "https://tellonym.me/{username}",
+   "check_type": "status_code",
+   "rank": 243708,
+   "claimed": "blue"
+  },
+  {
+   "name": "Nitro Type",
+   "url": "https://www.nitrotype.com/racer/{username}",
+   "check_type": "message",
+   "rank": 249464,
+   "absence": [
+    "<title>Nitro Type | Competitive Typing Game | Race Your Friends</title>"
+   ],
+   "claimed": "jianclash"
+  },
+  {
+   "name": "Blast",
+   "url": "https://www.blast.hk/members/?username={username}",
+   "check_type": "message",
+   "rank": 255291,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "SoylentNews",
+   "url": "https://soylentnews.org/~{username}",
+   "check_type": "message",
+   "rank": 261701,
+   "presence": [
+    "class=\"data_head\""
+   ],
+   "absence": [
+    "The user you requested does not exist, no matter how much you wish this might be the case."
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Shophelp",
+   "url": "https://shophelp.ru/profile/{username}",
+   "check_type": "status_code",
+   "rank": 282939,
+   "claimed": "green"
+  },
+  {
+   "name": "Pepper PL",
+   "url": "https://www.pepper.pl/profile/{username}",
+   "check_type": "status_code",
+   "rank": 284906,
+   "claimed": "FireChicken"
+  },
+  {
+   "name": "Mac-help",
+   "url": "https://www.mac-help.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 290689,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "newsbot"
+  },
+  {
+   "name": "Proglib",
+   "url": "https://proglib.io/u/{username}/posts",
+   "check_type": "status_code",
+   "rank": 294869,
+   "claimed": "red"
+  },
+  {
+   "name": "nightbot",
+   "url": "https://nightbot.tv/t/{username}/commands",
+   "check_type": "status_code",
+   "rank": 297361,
+   "url_probe": "https://api.nightbot.tv/1/channels/t/{username}",
+   "claimed": "green"
+  },
+  {
+   "name": "Rusfishing",
+   "url": "https://www.rusfishing.ru/forum/members/?username={username}",
+   "check_type": "message",
+   "rank": 305149,
+   "absence": [
+    "Указанный пользователь не найден"
+   ],
+   "ignore403": true,
+   "claimed": "ale8443"
+  },
+  {
+   "name": "4gameforum",
+   "url": "https://4gameforum.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 307726,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "persty"
+  },
+  {
+   "name": "Spells8",
+   "url": "https://forum.spells8.com/u/{username}",
+   "check_type": "status_code",
+   "rank": 308796,
+   "claimed": "susurrus"
+  },
+  {
+   "name": "Promodescuentos",
+   "url": "https://www.promodescuentos.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 310229,
+   "claimed": "blue"
+  },
+  {
+   "name": "101010.pl",
+   "url": "https://101010.pl/@{username}",
+   "check_type": "status_code",
+   "rank": 313959,
+   "url_probe": "https://101010.pl/api/v1/accounts/lookup?acct={username}",
+   "claimed": "ueh_kon"
+  },
+  {
+   "name": "Crypto Hack",
+   "url": "https://cryptohack.org/user/{username}/",
+   "check_type": "response_url",
+   "rank": 314976,
+   "claimed": "blue"
+  },
+  {
+   "name": "drupal.ru",
+   "url": "https://drupal.ru/username/{username}",
+   "check_type": "message",
+   "rank": 316892,
+   "presence": [
+    "<ul class=\"tabs--primary\">"
+   ],
+   "absence": [
+    "Страница не найдена - 404"
+   ],
+   "claimed": "alex"
+  },
+  {
+   "name": "Windows10forums",
+   "url": "https://www.windows10forums.com//members/?username={username}",
+   "check_type": "message",
+   "rank": 324090,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "2d-3d",
+   "url": "https://www.2d-3d.ru/user/{username}/",
+   "check_type": "status_code",
+   "rank": 324339,
+   "claimed": "adam"
+  },
+  {
+   "name": "House-Mixes.com",
+   "url": "https://www.house-mixes.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 325111,
+   "regex_check": "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$",
+   "claimed": "blue"
+  },
+  {
+   "name": "ngl.link",
+   "url": "https://ngl.link/{username}",
+   "check_type": "message",
+   "rank": 326425,
+   "presence": [
+    "1"
+   ],
+   "absence": [
+    "Could not find user"
+   ],
+   "claimed": "youbutdumberr"
+  },
+  {
+   "name": "Hudson Rock",
+   "url": "https://cavalier.hudsonrock.com/api/json/v2/osint-tools/search-by-username?username={username}",
+   "check_type": "message",
+   "rank": 327352,
+   "absence": [
+    "This username is not associated"
+   ],
+   "claimed": "testadmin"
+  },
+  {
+   "name": "Preisjaeger",
+   "url": "https://www.preisjaeger.at/profile/{username}",
+   "check_type": "status_code",
+   "rank": 328835,
+   "claimed": "Stefan"
+  },
+  {
+   "name": "CSSBattle",
+   "url": "https://cssbattle.dev/player/{username}",
+   "check_type": "message",
+   "rank": 335190,
+   "presence": [
+    "\"player\":{\"id\""
+   ],
+   "absence": [
+    "\"player\":null"
+   ],
+   "claimed": "beo"
+  },
+  {
+   "name": "Macosx",
+   "url": "https://macosx.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 340378,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "adam"
+  },
+  {
+   "name": "wow-game.ru",
+   "url": "http://wow-game.ru/index/8-0-{username}",
+   "check_type": "message",
+   "rank": 340812,
+   "presence": [
+    "udtlb\">Пользователь:</div>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста войдите на сайт как пользователь.",
+    "<center><b>Личные данные</b>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста, войдите на сайт как пользователь.",
+    "<img alt=\"\" name=\"rankimg\" border=\"0\" src=\"/.s/rnk/",
+    "Гостям запрещено просматривать персональные страницы пользователей.",
+    "profile-section-name",
+    "webo4ka_dannii",
+    "Дата регистрации"
+   ],
+   "absence": [
+    "<title>HTTP 404",
+    "Пользователь не найден"
+   ],
+   "regex_check": "^[^\\.\\-]+$",
+   "claimed": "alex"
+  },
+  {
+   "name": "Codeby.net",
+   "url": "https://codeby.net/members/?username={username}",
+   "check_type": "message",
+   "rank": 344494,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "pragmalion"
+  },
+  {
+   "name": "not606.com",
+   "url": "http://www.not606.com//members/?username={username}",
+   "check_type": "message",
+   "rank": 345901,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "Voicesevas",
+   "url": "http://voicesevas.ru/user/{username}/",
+   "check_type": "status_code",
+   "rank": 349728,
+   "claimed": "adam"
+  },
+  {
+   "name": "TamTam",
+   "url": "https://tamtam.chat/{username}",
+   "check_type": "message",
+   "rank": 349883,
+   "presence": [
+    "data-tsid=\"avatar\""
+   ],
+   "absence": [
+    "Pv3WuoqzAb05NxqHCgZ29Z2jmQ"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Gpodder",
+   "url": "https://gpodder.net/user/{username}",
+   "check_type": "status_code",
+   "rank": 353586,
+   "claimed": "blue"
+  },
+  {
+   "name": "Autolada",
+   "url": "https://www.autolada.ru/profile.php?mode=viewprofile&u={username}",
+   "check_type": "message",
+   "rank": 368758,
+   "presence": [
+    "postdetails"
+   ],
+   "absence": [
+    "<title> :: AUTOLADA.RU"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Uchportal",
+   "url": "https://www.uchportal.ru/index/8-0-{username}",
+   "check_type": "message",
+   "rank": 376053,
+   "presence": [
+    "udtlb\">Пользователь:</div>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста войдите на сайт как пользователь.",
+    "<center><b>Личные данные</b>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста, войдите на сайт как пользователь.",
+    "<img alt=\"\" name=\"rankimg\" border=\"0\" src=\"/.s/rnk/",
+    "Гостям запрещено просматривать персональные страницы пользователей.",
+    "profile-section-name",
+    "webo4ka_dannii",
+    "Дата регистрации"
+   ],
+   "absence": [
+    "<title>HTTP 404",
+    "Пользователь не найден"
+   ],
+   "regex_check": "^[^\\.\\-]+$",
+   "claimed": "adam"
+  },
+  {
+   "name": "Imood",
+   "url": "https://www.imood.com/users/{username}",
+   "check_type": "status_code",
+   "rank": 382848,
+   "claimed": "blue"
+  },
+  {
+   "name": "Armtorg",
+   "url": "https://armtorg.ru//forum/memberlist.php?username={username}",
+   "check_type": "message",
+   "rank": 397352,
+   "presence": [
+    "You must be logged in to do that.",
+    "./memberlist.php?mode=viewprofile"
+   ],
+   "absence": [
+    "No members found for this search criterion.",
+    "Не найдено ни одного пользователя по заданным критериям"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "fanficslandia.com",
+   "url": "https://fanficslandia.com/index.php/members/?username={username}",
+   "check_type": "message",
+   "rank": 405598,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "god"
+  },
+  {
+   "name": "Nixp",
+   "url": "https://www.nixp.ru/user/{username}",
+   "check_type": "status_code",
+   "rank": 411509,
+   "claimed": "fly4life"
+  },
+  {
+   "name": "Qbn",
+   "url": "https://www.qbn.com/{username}",
+   "check_type": "status_code",
+   "rank": 418939,
+   "claimed": "adam"
+  },
+  {
+   "name": "Autokadabra",
+   "url": "http://autokadabra.ru/users/{username}",
+   "check_type": "status_code",
+   "rank": 433984,
+   "claimed": "adam"
+  },
+  {
+   "name": "Pyha",
+   "url": "https://pyha.ru/users/{username}",
+   "check_type": "status_code",
+   "rank": 445197,
+   "claimed": "Sinkler"
+  },
+  {
+   "name": "Wolpy",
+   "url": "http://wolpy.com/{username}/profile",
+   "check_type": "status_code",
+   "rank": 446689,
+   "claimed": "blue"
+  },
+  {
+   "name": "Warframe Market",
+   "url": "https://warframe.market/profile/{username}",
+   "check_type": "status_code",
+   "rank": 451232,
+   "url_probe": "https://api.warframe.market/v2/user/{username}",
+   "claimed": "kaiallalone"
+  },
+  {
+   "name": "homsk.com",
+   "url": "https://homsk.com/profile/{username}",
+   "check_type": "message",
+   "rank": 451989,
+   "presence": [
+    "profile-stat",
+    "profile-wrap",
+    "profile-main",
+    "profile-image",
+    "profile-splash"
+   ],
+   "absence": [
+    "404 - Not Found"
+   ],
+   "claimed": "martin"
+  },
+  {
+   "name": "Chan4chan",
+   "url": "http://chan4chan.com/profile/{username}",
+   "check_type": "message",
+   "rank": 459294,
+   "absence": [
+    "<title>Log in - Chan4Chan</title>"
+   ],
+   "regex_check": "^[^\\.\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af\\uf900-\\ufaff]+$",
+   "claimed": "adam"
+  },
+  {
+   "name": "cubecraft.net",
+   "url": "https://www.cubecraft.net/members/?username={username}",
+   "check_type": "message",
+   "rank": 462006,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "FCRubin",
+   "url": "https://www.fcrubin.ru/forum/member.php?username={username}",
+   "check_type": "message",
+   "rank": 484513,
+   "absence": [
+    "Пользователь не зарегистрирован и не имеет профиля для просмотра.",
+    "Bu Üye kayıtlı Üyemiz değildir. Bu sebebten dolayı Üyeye ait Profil gösterilemiyor.",
+    "This user has not registered and therefore does not have a profile to view.",
+    "Користувач не зареєстрований і не має профілю, який можна переглянути.",
+    "Deze gebruiker is niet geregistreerd, zodat je zijn of haar profiel niet kunt bekijken.",
+    "Этот пользователь ещё не зарегистрирован, поэтому его профиль недоступен."
+   ],
+   "errors": {
+    "Простите, но ваш IP в списке запрещенных администрацией форума": "IP ban",
+    "You have been banned": "IP ban",
+    "The administrator has banned your IP address": "IP ban",
+    "Извините, сервер перегружен. Пожалуйста, попробуйте зайти позже.": "Server is overloaded"
+   },
+   "claimed": "flet"
+  },
+  {
+   "name": "oakleyforum.com",
+   "url": "https://www.oakleyforum.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 485026,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "admin"
+  },
+  {
+   "name": "Cyber Defenders",
+   "url": "https://cyberdefenders.org/p/{username}",
+   "check_type": "status_code",
+   "rank": 492743,
+   "regex_check": "^[^\\/:*?\"<>|@]{3,50}$",
+   "claimed": "mlohn"
+  },
+  {
+   "name": "TurPravda",
+   "url": "https://www.turpravda.com/profile/{username}",
+   "check_type": "message",
+   "rank": 497629,
+   "presence": [
+    "email",
+    " name"
+   ],
+   "absence": [
+    "Title",
+    " Shortcut Icon",
+    " submit"
+   ],
+   "claimed": "admin"
+  },
+  {
+   "name": "Omoimot",
+   "url": "https://omoimot.ru/users/{username}",
+   "check_type": "status_code",
+   "rank": 512231,
+   "claimed": "adam"
+  },
+  {
+   "name": "nucastle.co.uk",
+   "url": "http://www.nucastle.co.uk//members/?username={username}",
+   "check_type": "message",
+   "rank": 526002,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "red"
+  },
+  {
+   "name": "Newreporter",
+   "url": "https://newreporter.org/author/{username}/",
+   "check_type": "status_code",
+   "rank": 526873,
+   "claimed": "lilya"
+  },
+  {
+   "name": "Hitmanforum",
+   "url": "https://www.hitmanforum.com/u/{username}",
+   "check_type": "status_code",
+   "rank": 544945,
+   "url_probe": "https://www.hitmanforum.com/u/{username}.json",
+   "claimed": "john"
+  },
+  {
+   "name": "Rusarmy",
+   "url": "http://www.rusarmy.com/forum/members/?username={username}",
+   "check_type": "message",
+   "rank": 548713,
+   "absence": [
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя."
+   ],
+   "claimed": "vtsp1"
+  },
+  {
+   "name": "socioforum.su",
+   "url": "https://www.socioforum.su/search.php?author={username}",
+   "check_type": "message",
+   "rank": 551465,
+   "presence": [
+    "postprofile",
+    " username-coloured"
+   ],
+   "absence": [
+    "Подходящих тем или сообщений не найдено."
+   ],
+   "claimed": "admin"
+  },
+  {
+   "name": "Cad",
+   "url": "https://cad.ru/ru/forum/index.php?PAGE_NAME=profile_view&UID={username}",
+   "check_type": "message",
+   "rank": 554254,
+   "absence": [
+    "<title>Форум</title>"
+   ],
+   "claimed": "SergeT"
+  },
+  {
+   "name": "Xbox Gamertag",
+   "url": "https://xboxgamertag.com/search/{username}",
+   "check_type": "status_code",
+   "rank": 583362,
+   "errors": {
+    "Something went wrong": "Site error",
+    "Why do I have to complete a CAPTCHA": "Captcha detected"
+   },
+   "claimed": "smrnov"
+  },
+  {
+   "name": "Play.md",
+   "url": "https://play.md/profile/{username}",
+   "check_type": "response_url",
+   "rank": 585619,
+   "claimed": "green"
+  },
+  {
+   "name": "Angara",
+   "url": "https://angara.net/user/{username}",
+   "check_type": "status_code",
+   "rank": 587194,
+   "claimed": "adam"
+  },
+  {
+   "name": "Serveradmin",
+   "url": "https://serveradmin.ru/author/{username}",
+   "check_type": "message",
+   "rank": 597216,
+   "absence": [
+    "Not Found"
+   ],
+   "claimed": "fedor"
+  },
+  {
+   "name": "Pychess",
+   "url": "https://www.pychess.org/@/{username}",
+   "check_type": "status_code",
+   "rank": 597958,
+   "claimed": "gbtami"
+  },
+  {
+   "name": "Prokoni",
+   "url": "https://www.prokoni.ru/forum/members/?username={username}",
+   "check_type": "message",
+   "rank": 605755,
+   "absence": [
+    "Указанный пользователь не найден"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "twentysix.ru",
+   "url": "https://twentysix.ru/profile/{username}/",
+   "check_type": "status_code",
+   "rank": 621058,
+   "claimed": "alex"
+  },
+  {
+   "name": "Soundgym",
+   "url": "https://www.soundgym.co/member/profile?m={username}",
+   "check_type": "response_url",
+   "rank": 637049,
+   "claimed": "raydrcougso"
+  },
+  {
+   "name": "webos-forums.ru",
+   "url": "http://webos-forums.ru/search.php?author={username}",
+   "check_type": "message",
+   "rank": 654522,
+   "presence": [
+    "postprofile",
+    " username-coloured"
+   ],
+   "absence": [
+    "Подходящих тем или сообщений не найдено."
+   ],
+   "claimed": "alex"
+  },
+  {
+   "name": "Nesiditsa",
+   "url": "https://nesiditsa.ru/members/{username}/",
+   "check_type": "status_code",
+   "rank": 665745,
+   "claimed": "lara"
+  },
+  {
+   "name": "rec.poker",
+   "url": "https://rec.poker/author/{username}/",
+   "check_type": "message",
+   "rank": 669422,
+   "presence": [
+    "author-",
+    "author/"
+   ],
+   "absence": [
+    "error404"
+   ],
+   "claimed": "alex"
+  },
+  {
+   "name": "forums.drom.ru",
+   "url": "https://www.forumsdrom.ru/member.php?username={username}",
+   "check_type": "message",
+   "rank": 675810,
+   "presence": [
+    "Просмотр профиля:"
+   ],
+   "claimed": "red"
+  },
+  {
+   "name": "Psyera",
+   "url": "https://psyera.ru/user/{username}",
+   "check_type": "status_code",
+   "rank": 688891,
+   "claimed": "eskariot"
+  },
+  {
+   "name": "Lenov",
+   "url": "https://lenov.ru/user/{username}/",
+   "check_type": "status_code",
+   "rank": 719336,
+   "claimed": "admin"
+  },
+  {
+   "name": "RussianFI",
+   "url": "http://www.russian.fi//forum/member.php?username={username}",
+   "check_type": "message",
+   "rank": 725461,
+   "absence": [
+    "Пользователь не зарегистрирован и не имеет профиля для просмотра.",
+    "Bu Üye kayıtlı Üyemiz değildir. Bu sebebten dolayı Üyeye ait Profil gösterilemiyor.",
+    "This user has not registered and therefore does not have a profile to view.",
+    "Користувач не зареєстрований і не має профілю, який можна переглянути.",
+    "Deze gebruiker is niet geregistreerd, zodat je zijn of haar profiel niet kunt bekijken.",
+    "Этот пользователь ещё не зарегистрирован, поэтому его профиль недоступен."
+   ],
+   "errors": {
+    "Простите, но ваш IP в списке запрещенных администрацией форума": "IP ban",
+    "You have been banned": "IP ban",
+    "The administrator has banned your IP address": "IP ban",
+    "Извините, сервер перегружен. Пожалуйста, попробуйте зайти позже.": "Server is overloaded"
+   },
+   "claimed": "adam"
+  },
+  {
+   "name": "Votetags",
+   "url": "https://www.votetags.info/author/{username}/",
+   "check_type": "message",
+   "rank": 741662,
+   "absence": [
+    "<title>Page Not Found"
+   ],
+   "errors": {
+    "<title>Bot Verification": "Bot protection"
+   },
+   "claimed": "furnigence"
+  },
+  {
+   "name": "Thebuddyforum",
+   "url": "https://www.thebuddyforum.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 741819,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "tony"
+  },
+  {
+   "name": "W3challs",
+   "url": "https://w3challs.com/profile/{username}",
+   "check_type": "message",
+   "rank": 743006,
+   "absence": [
+    "<title>404 Page not found – W3Challs Hacking Challenges</title>"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "trworkshop.net",
+   "url": "http://www.trworkshop.net/forum/search.php?author={username}",
+   "check_type": "message",
+   "rank": 743300,
+   "presence": [
+    "postprofile",
+    " username-coloured"
+   ],
+   "absence": [
+    "Подходящих тем или сообщений не найдено."
+   ],
+   "claimed": "alex"
+  },
+  {
+   "name": "Gentlemint",
+   "url": "https://gentlemint.com/users/{username}/",
+   "check_type": "status_code",
+   "rank": 746262,
+   "claimed": "zamoose"
+  },
+  {
+   "name": "Erogen.club",
+   "url": "https://erogen.club/members/?username={username}",
+   "check_type": "message",
+   "rank": 754118,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "yanok"
+  },
+  {
+   "name": "Fishingsib",
+   "url": "https://www.fishingsib.ru/forum/members/?username={username}",
+   "check_type": "message",
+   "rank": 755832,
+   "absence": [
+    "Указанный пользователь не найден"
+   ],
+   "claimed": "red"
+  },
+  {
+   "name": "Maccentre",
+   "url": "https://maccentre.ru/board/profile.php?mode=viewprofile&u={username}",
+   "check_type": "message",
+   "rank": 772555,
+   "absence": [
+    "Извините, такого пользователя не существует"
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "Coders Rank",
+   "url": "https://profile.codersrank.io/user/{username}/",
+   "check_type": "message",
+   "rank": 796930,
+   "absence": [
+    "not a registered member"
+   ],
+   "regex_check": "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$",
+   "claimed": "rootkit7628"
+  },
+  {
+   "name": "Status Cafe",
+   "url": "https://status.cafe/users/{username}",
+   "check_type": "message",
+   "rank": 805151,
+   "absence": [
+    "Page Not Found"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "Writercenter",
+   "url": "https://writercenter.ru/profile/{username}/",
+   "check_type": "status_code",
+   "rank": 811897,
+   "claimed": "green"
+  },
+  {
+   "name": "Painters-online",
+   "url": "https://www.painters-online.co.uk/artists/{username}/",
+   "check_type": "status_code",
+   "rank": 829732,
+   "claimed": "alanbickley"
+  },
+  {
+   "name": "pobedish.ru",
+   "url": "https://pobedish.ru/forum/search.php?author={username}",
+   "check_type": "message",
+   "rank": 834313,
+   "presence": [
+    "postprofile",
+    " username-coloured"
+   ],
+   "absence": [
+    "Подходящих тем или сообщений не найдено."
+   ],
+   "claimed": "john"
+  },
+  {
+   "name": "Caduser",
+   "url": "https://www.caduser.ru/forum/userlist.php?username={username}",
+   "check_type": "message",
+   "rank": 842986,
+   "absence": [
+    "По вашему запросу ничего не найдено."
+   ],
+   "claimed": "adamas"
+  },
+  {
+   "name": "Caves",
+   "url": "https://caves.ru/members/?username={username}",
+   "check_type": "message",
+   "rank": 843914,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "junk"
+  },
+  {
+   "name": "Admire Me",
+   "url": "https://admireme.vip/{username}",
+   "check_type": "message",
+   "rank": 853238,
+   "absence": [
+    "Page Not Found"
+   ],
+   "claimed": "DemiDevil"
+  },
+  {
+   "name": "Alushta24",
+   "url": "https://alushta24.org/user/{username}/",
+   "check_type": "response_url",
+   "rank": 856074,
+   "presence": [
+    "class=\"profile-info\""
+   ],
+   "claimed": "Igor11324"
+  },
+  {
+   "name": "Minecraft-statistic",
+   "url": "https://minecraft-statistic.net/ru/player/{username}.html",
+   "check_type": "status_code",
+   "rank": 870531,
+   "claimed": "Right"
+  },
+  {
+   "name": "wasm.in",
+   "url": "https://wasm.in/members/?username={username}",
+   "check_type": "message",
+   "rank": 877884,
+   "presence": [
+    "Вы должны быть авторизованы, чтобы выполнить это действие или просмотреть эту страницу.",
+    "Для того, чтобы это сделать, нужно сначала войти на форум.",
+    "You must be logged-in to do that.",
+    "You must be logged in to do that.",
+    "הינך נדרש להתחבר כדי לבצע פעולה זו.",
+    "برای انجام این کار باید به انجمن ورود کنید",
+    "memberHeader-content",
+    "profilePage",
+    "Du musst eingeloggt sein, um das zu tun.",
+    "Dazu muss man eingeloggt sein."
+   ],
+   "absence": [
+    "The requested page could not be found.",
+    "The specified member cannot be found. Please enter a member",
+    "Указанный пользователь не найден. Пожалуйста, введите другое имя.",
+    "Le membre spécifié est introuvable. Veuillez saisir le nom complet d'un membre.",
+    "Belirtilen üye bulunamadı. Lütfen bir üyenin tam adını giriniz.",
+    "Das angegebene Mitglied kann nicht gefunden werden. Bitte gib"
+   ],
+   "ignore403": true,
+   "claimed": "alex"
+  },
+  {
+   "name": "Connosr",
+   "url": "https://www.connosr.com/@{username}",
+   "check_type": "status_code",
+   "rank": 888424,
+   "claimed": "adam"
+  },
+  {
+   "name": "LiveTrack24",
+   "url": "https://www.livetrack24.com/user/{username}",
+   "check_type": "message",
+   "rank": 889586,
+   "presence": [
+    "profileinfodiv"
+   ],
+   "absence": [
+    "not found"
+   ],
+   "claimed": "anna"
+  },
+  {
+   "name": "Ccdi",
+   "url": "http://www.ccdi.ru/users/{username}",
+   "check_type": "status_code",
+   "rank": 890453,
+   "claimed": "Nikita55"
+  },
+  {
+   "name": "Free-lancers",
+   "url": "http://www.free-lancers.net/users/{username}/",
+   "check_type": "status_code",
+   "rank": 903625,
+   "claimed": "adam"
+  },
+  {
+   "name": "diorama.ru",
+   "url": "https://diorama.ru/forum/search.php?author={username}",
+   "check_type": "message",
+   "rank": 912957,
+   "presence": [
+    "postprofile",
+    " username-coloured"
+   ],
+   "absence": [
+    "Подходящих тем или сообщений не найдено."
+   ],
+   "claimed": "alex"
+  },
+  {
+   "name": "Vezha",
+   "url": "https://vezha.com/members/?username={username}",
+   "check_type": "message",
+   "rank": 919610,
+   "absence": [
+    "Пользователь не зарегистрирован"
+   ],
+   "claimed": "red"
+  },
+  {
+   "name": "forum-mil.ru",
+   "url": "http://forum-mil.ru/index/8-0-{username}",
+   "check_type": "message",
+   "rank": 923052,
+   "presence": [
+    "udtlb\">Пользователь:</div>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста войдите на сайт как пользователь.",
+    "<center><b>Личные данные</b>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста, войдите на сайт как пользователь.",
+    "<img alt=\"\" name=\"rankimg\" border=\"0\" src=\"/.s/rnk/",
+    "Гостям запрещено просматривать персональные страницы пользователей.",
+    "profile-section-name",
+    "webo4ka_dannii",
+    "Дата регистрации"
+   ],
+   "absence": [
+    "<title>HTTP 404",
+    "Пользователь не найден"
+   ],
+   "regex_check": "^[^\\.\\-]+$",
+   "claimed": "alex"
+  },
+  {
+   "name": "YaPishu.net",
+   "url": "https://yapishu.net/user/{username}",
+   "check_type": "status_code",
+   "rank": 945331,
+   "headers": {
+    "Cookie": "hc=1"
+   },
+   "claimed": "admin"
+  },
+  {
+   "name": "cheat-master.ru",
+   "url": "http://cheat-master.ru/index/8-0-{username}",
+   "check_type": "message",
+   "rank": 975667,
+   "presence": [
+    "udtlb\">Пользователь:</div>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста войдите на сайт как пользователь.",
+    "<center><b>Личные данные</b>",
+    "Гостям запрещено просматривать данную страницу, пожалуйста, войдите на сайт как пользователь.",
+    "<img alt=\"\" name=\"rankimg\" border=\"0\" src=\"/.s/rnk/",
+    "Гостям запрещено просматривать персональные страницы пользователей.",
+    "profile-section-name",
+    "webo4ka_dannii",
+    "Дата регистрации"
+   ],
+   "absence": [
+    "<title>HTTP 404",
+    "Пользователь не найден"
+   ],
+   "regex_check": "^[^\\.\\-]+$",
+   "claimed": "god"
+  },
+  {
+   "name": "Dogster",
+   "url": "http://dogster.ru/users/{username}/",
+   "check_type": "status_code",
+   "rank": 999034,
+   "claimed": "adam"
+  },
+  {
+   "name": "3d-artmaker.de",
+   "url": "https://3d-artmaker.de/memberlist.php?mode=viewprofile&un={username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Dennis"
+  },
+  {
+   "name": "438punk.house",
+   "url": "https://438punk.house/@{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "xyhhx"
+  },
+  {
+   "name": "4d2.org (Matrix)",
+   "url": "https://matrix.to/#/@{username}:4d2.org",
+   "check_type": "status_code",
+   "rank": 0,
+   "url_probe": "https://matrix.4d2.org/_matrix/client/v3/profile/@{username}:4d2.org",
+   "claimed": "chaosmuse"
+  },
+  {
+   "name": "7ya",
+   "url": "https://blog.7ya.ru/{username}/",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "trotter"
+  },
+  {
+   "name": "810video.com",
+   "url": "https://810video.com/a/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "kuiaratamete"
+  },
+  {
+   "name": "a.nti.social",
+   "url": "https://a.nti.social/users/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "url_probe": "https://a.nti.social/.well-known/webfinger?resource=acct:{username}@a.nti.social",
+   "claimed": "library"
+  },
+  {
+   "name": "a60188094.vanillacommunities.com",
+   "url": "https://a60188094.vanillacommunities.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Seller0X10F37"
+  },
+  {
+   "name": "Aback",
+   "url": "https://aback.com.ua/user/{username}",
+   "check_type": "message",
+   "rank": 0,
+   "absence": [
+    "Пользователь с таким именем не найден."
+   ],
+   "claimed": "adam"
+  },
+  {
+   "name": "absurdopedia.wiki",
+   "url": "https://absurdopedia.wiki/User:{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Тэйтанка-птекила"
+  },
+  {
+   "name": "add-groups.com",
+   "url": "https://add-groups.com/user/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "admin"
+  },
+  {
+   "name": "addons.thunderbird.net",
+   "url": "https://addons.thunderbird.net/en-US/thunderbird/user/{username}/",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Brummolix"
+  },
+  {
+   "name": "Addons.wago",
+   "url": "https://addons.wago.io/user/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "blue"
+  },
+  {
+   "name": "adybov.ru/forum",
+   "url": "https://adybov.ru/forum/memberlist.php?mode=viewprofile&un={username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "TYMAH"
+  },
+  {
+   "name": "aep-emu.de",
+   "url": "https://www.aep-emu.de/flarum/public/u/{username}",
+   "check_type": "message",
+   "rank": 0,
+   "presence": [
+    "\"username\":",
+    "\"displayName\":"
+   ],
+   "claimed": "pYRo"
+  },
+  {
+   "name": "aetherhub",
+   "url": "https://aetherhub.com/User/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "adam"
+  },
+  {
+   "name": "AfreecaTV",
+   "url": "http://bjapi.afreecatv.com/api/{username}/station",
+   "check_type": "message",
+   "rank": 0,
+   "presence": [
+    "profile_text",
+    "profile_image",
+    "name",
+    "station_name",
+    "user_nick"
+   ],
+   "absence": [
+    "Blog does not exist."
+   ],
+   "claimed": "showsaovivo"
+  },
+  {
+   "name": "aibusters.net",
+   "url": "https://aibusters.net/user/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "bloom2589"
+  },
+  {
+   "name": "Airbit",
+   "url": "https://airbit.com/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "airbit"
+  },
+  {
+   "name": "ak.kawen.space",
+   "url": "https://ak.kawen.space/users/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "url_probe": "https://ak.kawen.space/.well-known/webfinger?resource=acct:{username}@ak.kawen.space",
+   "claimed": "tlapka"
+  },
+  {
+   "name": "algowiki-project.org",
+   "url": "https://algowiki-project.org/en/User:{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "test"
+  },
+  {
+   "name": "alimero.ru",
+   "url": "https://alimero.ru/profile/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "adam"
+  },
+  {
+   "name": "All-mods",
+   "url": "https://all-mods.ru/author/{username}/",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "adam"
+  },
+  {
+   "name": "allav.me",
+   "url": "https://allav.me/a/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "awaidelich4570"
+  },
+  {
+   "name": "alsa-project.org",
+   "url": "https://alsa-project.org/wiki/User:{username}",
+   "check_type": "message",
+   "rank": 0,
+   "url_probe": "https://alsa-project.org/main/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|groups|gender&format=json",
+   "presence": [
+    "\"userid\":"
+   ],
+   "absence": [
+    "\"missing\":",
+    "\"invalid\":"
+   ],
+   "claimed": "Zx80user"
+  },
+  {
+   "name": "Alura",
+   "url": "https://cursos.alura.com.br/user/{username}",
+   "check_type": "message",
+   "rank": 0,
+   "presence": [
+    "Perfil de"
+   ],
+   "absence": [
+    "\"error\":\"Not Found\""
+   ],
+   "claimed": "edmilson"
+  },
+  {
+   "name": "Ameba",
+   "url": "https://profile.ameba.jp/ameba/{username}/",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "haruharuko3"
+  },
+  {
+   "name": "amenzb.moe",
+   "url": "https://amenzb.moe/u/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Ame"
+  },
+  {
+   "name": "anar.chi.st",
+   "url": "https://anar.chi.st/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "bugs"
+  },
+  {
+   "name": "Anime.web.tr",
+   "url": "http://www.anime.web.tr/yazar/{username}/",
+   "check_type": "message",
+   "rank": 0,
+   "absence": [
+    "Üzgünüz, böyle bir kullanıcı bulunmuyor"
+   ],
+   "claimed": "blue"
+  },
+  {
+   "name": "AnimeGo",
+   "url": "https://animego.online/user/{username}/",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Dolaze"
+  },
+  {
+   "name": "answermug.com/forums",
+   "url": "https://answermug.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Thriftymaid"
+  },
+  {
+   "name": "Antipunk",
+   "url": "https://antipunk.com/users/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "red"
+  },
+  {
+   "name": "anvil.works",
+   "url": "https://anvil.works/forum/u/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "divyeshlakhotia"
+  },
+  {
+   "name": "aoifansub.com/forum",
+   "url": "https://aoifansub.com/forum/members/?username={username}",
+   "check_type": "message",
+   "rank": 0,
+   "presence": [
+    "class=\"profileContent\"",
+    "class=\"member_view\""
+   ],
+   "claimed": "fei"
+  },
+  {
+   "name": "app.airnfts.com",
+   "url": "https://app.airnfts.com/creators/{username}",
+   "check_type": "message",
+   "rank": 0,
+   "presence": [
+    "username",
+    "ownerUsername",
+    "creatorUsername",
+    "name",
+    "user"
+   ],
+   "absence": [
+    "user-not-found-div"
+   ],
+   "claimed": "test"
+  },
+  {
+   "name": "app.samsungfood.com",
+   "url": "https://app.samsungfood.com/u/{username}",
+   "check_type": "message",
+   "rank": 0,
+   "presence": [
+    "alternateName",
+    "totalTime"
+   ],
+   "absence": [
+    ">User not found</h1></div>"
+   ],
+   "claimed": "moonlitraven"
+  },
+  {
+   "name": "Appinn",
+   "url": "https://meta.appinn.net/u/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "appinn"
+  },
+  {
+   "name": "applefritter.com",
+   "url": "https://www.applefritter.com/users/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "aurbo"
+  },
+  {
+   "name": "applicationengineering.vanillacommunities.com",
+   "url": "https://applicationengineering.vanillacommunities.com/profile/{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Lafcadio"
+  },
+  {
+   "name": "ar.orthodoxwiki.org",
+   "url": "https://ar.orthodoxwiki.org/User:{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Inistea"
+  },
+  {
+   "name": "arabeyes.org",
+   "url": "https://www.arabeyes.org/User:{username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "Youssef"
+  },
+  {
+   "name": "arcade-zockerbande.de",
+   "url": "https://arcade-zockerbande.de/memberlist.php?mode=viewprofile&un={username}",
+   "check_type": "status_code",
+   "rank": 0,
+   "claimed": "pierre"
+  },
+  {
+   "name": "architizer.com",
+   "url": "https://architizer.com/users/{username}",
+   "check_type": "message",
+   "rank": 0,
+   "presence": [
+    "Projects"
+   ],
+   "absence": [
+    "We can't seem to find the page you're looking for."
+   ],
+   "claimed": "adam"
+  }
+ ]
+}

@@ -1,0 +1,226 @@
+1001tracklists  # misses claimed username
+21buttons  # misses claimed username
+23hq  # misses claimed username
+500px  # misses claimed username
+Affiliatefix  # misses claimed username
+AllKPop  # misses claimed username
+AllTheLyrics  # misses claimed username
+Allhockey  # misses claimed username
+Amazon  # misses claimed username
+Anibox  # misses claimed username
+Antique-bottles  # misses claimed username
+Antiwomen  # misses claimed username
+Aqa  # false positive
+Armorgames  # misses claimed username
+Avizo  # misses claimed username
+Avto-forum.name  # misses claimed username
+Avtomarket  # misses claimed username
+BabyBlog.ru  # misses claimed username
+Bayoushooter  # misses claimed username
+Behance  # misses claimed username
+Bobrdobr  # misses claimed username
+CS-Lords  # misses claimed username
+Carmasters  # misses claimed username
+Chemport  # misses claimed username
+Chollometro  # misses claimed username
+Clapper  # misses claimed username
+Coroflot  # misses claimed username
+Dalnoboi  # false positive
+Datpiff  # misses claimed username
+DefenceForumIndia  # misses claimed username
+Discussfastpitch  # misses claimed username
+Dissenter  # misses claimed username
+DonatePay  # misses claimed username
+Dumpor  # misses claimed username
+EasyEDA  # misses claimed username
+Ebay  # misses claimed username
+Empretienda AR  # misses claimed username
+EuroFootball  # misses claimed username
+Expono  # misses claimed username
+Facebook  # misses claimed username
+FilmWeb  # false positive
+Filmow  # misses claimed username
+Flashflashrevolution  # misses claimed username
+ForumKinopoisk  # misses claimed username
+GaiaOnline  # false positive
+Gigbucks  # misses claimed username
+Globalvoices  # misses claimed username
+Goldroyal  # misses claimed username
+Google Scholar  # misses claimed username
+Guru  # misses claimed username
+GuruShots  # misses claimed username
+Hashnode  # misses claimed username
+Hctorpedo  # misses claimed username
+Hellboundhackers  # misses claimed username
+Hive Blog  # misses claimed username
+Hot UKdeals  # misses claimed username
+Hotcopper  # misses claimed username
+ImgUp.cz  # misses claimed username
+Infourok  # misses claimed username
+Ingvarr  # misses claimed username
+Interfaith  # misses claimed username
+IssueHunt  # misses claimed username
+Italia  # misses claimed username
+Kashalot  # misses claimed username
+Kuharka  # misses claimed username
+Lichess  # misses claimed username
+Likee  # misses claimed username
+Lkforum  # misses claimed username
+LyricsTranslate  # misses claimed username
+Mdregion  # misses claimed username
+MeetMe  # misses claimed username
+Mixupload  # misses claimed username
+Mobypicture  # misses claimed username
+Monkeytype  # misses claimed username
+Myinstants  # misses claimed username
+Namepros  # misses claimed username
+Namuwiki  # misses claimed username
+Niketalk  # misses claimed username
+Noblogs  # misses claimed username
+OP.GG LoL Phillippines  # misses claimed username
+OP.GG LoL Singapore  # misses claimed username
+OP.GG LoL Thailand  # misses claimed username
+Observable  # misses claimed username
+Pandia  # misses claimed username
+Parkrocker  # misses claimed username
+Partyflock  # misses claimed username
+Periscope  # misses claimed username
+Pgpru  # misses claimed username
+Physicsforums  # misses claimed username
+Piccsy  # misses claimed username
+Pinterest  # misses claimed username
+Planetaexcel  # misses claimed username
+Pling  # false positive
+Poembook  # misses claimed username
+Pokecommunity  # misses claimed username
+Polarsteps  # misses claimed username
+Politikforum  # misses claimed username
+Prodaman  # misses claimed username
+ProductHunt  # misses claimed username
+Professionali  # misses claimed username
+Proshkolu  # misses claimed username
+Psychologies.ru  # misses claimed username
+Publiclab  # misses claimed username
+Queer  # misses claimed username
+Realmeye-graveyard  # misses claimed username
+Reibert  # misses claimed username
+ReligiousForums  # misses claimed username
+Rlocman  # misses claimed username
+Roblox  # misses claimed username
+Roboforum  # misses claimed username
+Rollitup  # misses claimed username
+Rutracker  # misses claimed username
+Sbazar.cz  # misses claimed username
+Setlist  # misses claimed username
+Slack  # misses claimed username
+Slashdot  # misses claimed username
+SlideShare  # misses claimed username
+SourceForge  # misses claimed username
+Spaces  # misses claimed username
+Spark  # misses claimed username
+Sporcle  # misses claimed username
+Sprashivai  # misses claimed username
+Steam  # misses claimed username
+Steamidfinder  # misses claimed username
+Texasguntalk  # misses claimed username
+Thelion  # misses claimed username
+TikTok  # misses claimed username
+Tinkoff Invest  # misses claimed username
+Tripster  # misses claimed username
+Trisquel  # misses claimed username
+Truesteamachievements  # misses claimed username
+Truthbook  # misses claimed username
+TryHackMe  # misses claimed username
+Tv-games  # misses claimed username
+Tweakers  # misses claimed username
+Typeracer  # misses claimed username
+Untappd  # misses claimed username
+Uvelir  # misses claimed username
+Vapenews  # misses claimed username
+Volgograd Forum  # misses claimed username
+Weasyl  # misses claimed username
+Weburg  # misses claimed username
+Weedmaps  # misses claimed username
+Wigle  # misses claimed username
+Windowsforum  # misses claimed username
+Worldofplayers  # misses claimed username
+Yummly  # misses claimed username
+babyboom.pl  # misses claimed username
+bigfooty.com  # misses claimed username
+bitpapa.com  # misses claimed username
+car72.ru  # misses claimed username
+clubsnap.com  # misses claimed username
+cowboyszone.com  # misses claimed username
+crafta.ua  # misses claimed username
+crown6.org  # misses claimed username
+directx10.org  # misses claimed username
+donate.stream  # misses claimed username
+figarohair.ru  # misses claimed username
+followus.com  # misses claimed username
+freelance.ua  # misses claimed username
+ghisler.ch  # misses claimed username
+hondaswap.com  # misses claimed username
+hozpitality  # false positive
+hunting  # misses claimed username
+intoclassics.net  # misses claimed username
+izobil.ru  # misses claimed username
+jeepspb.ru  # misses claimed username
+joyreactor.cc  # false positive
+khabmama.ru  # misses claimed username
+kloomba.com  # misses claimed username
+linktr.ee  # misses claimed username
+md  # misses claimed username
+megapolis.org  # misses claimed username
+mikrob.ru  # misses claimed username
+mir-stalkera.ru  # misses claimed username
+mnogodetok.ru  # misses claimed username
+motoforum.ru  # misses claimed username
+mywishboard.com  # misses claimed username
+nhattao.com  # misses claimed username
+nikoncafe.com  # misses claimed username
+nokia-love.ru  # misses claimed username
+notabug.org  # misses claimed username
+oshwlab.com  # misses claimed username
+pajero4x4.ru  # misses claimed username
+prog.hu  # misses claimed username
+qna.center  # false positive
+radioskot  # misses claimed username
+railforums.co.uk  # misses claimed username
+ridemonkey.com  # misses claimed username
+rive.app  # misses claimed username
+samesound.ru  # false positive
+sanatatur.ru  # misses claimed username
+sasgis.org  # misses claimed username
+school2dobrinka.ru  # misses claimed username
+shipmodeling.ru  # misses claimed username
+soc-life.com  # misses claimed username
+southbayriders.com  # misses claimed username
+svtperformance.com  # misses claimed username
+tigerfan.com  # misses claimed username
+uID.me (by username)  # misses claimed username
+uazpatriot.ru  # misses claimed username
+unixforum.org  # misses claimed username
+vauxhallownersnetwork.co.uk  # misses claimed username
+vishivalochka.ru  # misses claimed username
+webdeveloper.com  # misses claimed username
+writingforums.org  # misses claimed username
+xgm.guru  # misses claimed username
+yamaya.ru  # false positive
+yka.kz  # misses claimed username
+11x2  # misses claimed username
+123rf  # false positive
+2Dimensions  # misses claimed username
+3DMir.ru  # misses claimed username
+3asq.com  # misses claimed username
+8tracks.com  # misses claimed username
+AdvancedCustomFields  # misses claimed username
+Alabay  # misses claimed username
+Contently  # false positive
+agora.picapp.org  # misses claimed username
+iRecommend.RU  # misses claimed username
+Anonup  # misses claimed username
+Appian  # misses claimed username
+Mywed  # misses claimed username
+Aptoide  # misses claimed username
+Overclockers  # misses claimed username
+lada-vesta.net  # misses claimed username
