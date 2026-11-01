@@ -1,84 +1,145 @@
-# osint-tui
+# osint
 
-Kişisel dijital iz denetimi ve CTF öğrenimi için terminal arayüzlü (TUI) bir OSINT aracı.
-Python + [Textual](https://textual.textualize.io/) ile yazıldı; üç sekmesi var.
+Terminal OSINT toolkit: username search across **500 sites**, email recon and domain/IP recon, in an interactive shell or as one-shot commands.
 
-![Ekran görüntüsü](docs/ekran.svg)
+![osint banner and a sample scan](docs/screenshot.svg)
 
-## Kurulum
+> Use it on yourself, in CTFs, or with explicit authorization. See [Legal and ethics](#legal-and-ethics).
 
-```fish
-cd ~/osint-tui
-uv venv .venv
-uv pip install -e ".[test]"
+## Features
+
+- **Username search** on 500 sites. The site list is derived from [maigret](https://github.com/soxoj/maigret)'s database and pruned against the live internet: every shipped site was checked with random nonsense usernames and none reports a false "found".
+- **Email recon** with free sources and no API keys: XposedOrNot breaches, [holehe](https://github.com/megadose/holehe) account checks, Gravatar and GitHub profiles, MX and mail provider detection.
+- **Domain / IP recon**: whois, DNS records, subdomains from certificate transparency (crt.sh), reverse DNS and geolocation for IPs.
+- **Interactive shell** (`osint ❯`) with history and tab completion, or **one-shot** commands with `--json` output.
+- **Markdown reports** (`save`), never overwriting an earlier report.
+- Ctrl-C cancels the running scan, not the program; partial results are kept.
+
+## Install
+
+Requires Python 3.10 or newer.
+
+```bash
+git clone https://github.com/YCistak/osint.git
+cd osint
+
+# with uv (recommended)
+uv venv .venv && uv pip install --python .venv/bin/python -e .
+
+# or with pip
+python3 -m venv .venv && .venv/bin/pip install -e .
+
+.venv/bin/osint
 ```
 
-`uv` yoksa: `python -m venv .venv; .venv/bin/pip install -e ".[test]"`
+`./run.sh` does the same setup on first run and then starts the shell.
 
-## Çalıştırma
+## Usage
 
-```fish
-./calistir.sh              # ilk çalıştırmada .venv'i kendisi kurar
-# veya
-.venv/bin/osint-tui
+### Interactive shell
+
+```text
+$ osint
+ ██████╗ ███████╗██╗███╗   ██╗████████╗
+██╔═══██╗██╔════╝██║████╗  ██║╚══██╔══╝
+██║   ██║███████╗██║██╔██╗ ██║   ██║
+██║   ██║╚════██║██║██║╚██╗██║   ██║
+╚██████╔╝███████║██║██║ ╚████║   ██║
+ ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝   ╚═╝
+v0.2 · 500 sites · type 'help'
+
+osint ❯ username torvalds
 ```
 
-### Tuşlar
-
-| Tuş | İşlev |
+| Command | What it does |
 |---|---|
-| `F1` / `F2` / `F3` | Sekmeler arası geçiş |
-| `Enter` | Sorguyu başlat |
-| `Ctrl+S` | Aktif sekmenin raporunu kaydet |
-| `Ctrl+T` | "Tümünü göster" anahtarını aç/kapat (kullanıcı adı, e-posta) |
-| `Esc` | Giriş kutusundan çık |
-| `q` | Çıkış (giriş kutusuna odaklı değilken) |
-| `Ctrl+Q` | Her durumda çıkış |
+| `username <name>` | Search a username on all sites |
+| `email <address> [--unsafe] [--all-modules]` | Breaches, registered accounts, profiles, mail server |
+| `domain <domain\|ip>` | Whois, DNS, subdomains (domain) or reverse DNS and geolocation (IP) |
+| `save [path]` | Save the last result as Markdown (default: `./reports/`) |
+| `show all\|found` | Re-display the last result; `all` also lists not-found and unknown sites |
+| `help`, `clear` | Help text, clear the screen |
+| `exit`, `quit`, Ctrl-D | Leave |
 
-## Modüller
+Output markers: `[+]` found (green), `[-]` not found (red, hidden unless `show all`), `[?]` unknown (yellow), `[*]` info and progress (blue). Sites that could not be checked (blocked, rate limited, timeout) are counted in the summary instead of flooding the screen.
 
-### 1. Kullanıcı adı
-Kullanıcı adını 37 sitede aynı anda (en çok 20 eşzamanlı istek, 8 sn zaman aşımı) arar.
-Sonuçlar tabloya canlı düşer: `✔` bulundu, `✘` yok, `?` belirsiz (engel, istek sınırı, zaman aşımı).
-Varsayılan olarak yalnızca bulunanlar gösterilir; "Tümünü göster" anahtarıyla hepsi görünür.
+### One-shot
 
-Site listesi `osint_tui/siteler.json` dosyasındadır; her kayıt bir URL şablonu (`{}` yerine kullanıcı adı gelir)
-ve bir tespit yöntemi içerir: `durum` (HTTP 200/404), `bulunamadi_metni` veya `bulundu_metni`.
-Doğruluk sayıdan önemlidir: bot doğrulaması çıkaran veya var olmayan adda da "200" dönen siteler
-(Instagram, X, TikTok, Pinterest, Kaggle…) bilerek listede yoktur. Yeni site eklerken mutlaka
-anlamsız bir adla (ör. `zq8xkv3pp91ww`) deneyip yanlış pozitif olmadığını doğrulayın.
-
-### 2. E-posta
-[holehe](https://github.com/megadose/holehe) kütüphanesiyle e-postanın hangi servislerde kayıtlı olduğuna bakar.
-- "Şifremi unuttum" akışı tetikleyen 4 servis (Adobe, Mail.ru, Odnoklassniki, Samsung) hedefe e-posta gitmesin diye **atlanır**.
-- İstek sınırına takılan veya yanıt vermeyen servisler `?` olarak gösterilir.
-- Veri sızıntısı kontrolü için [haveibeenpwned.com](https://haveibeenpwned.com) adresine elle bakın (ücretli API anahtarı kullanılmaz).
-
-### 3. Alan adı / IP
-- **Alan adı:** whois (python-whois), DNS kayıtları (A, AAAA, MX, NS, TXT — dnspython) ve crt.sh sertifika
-  kayıtlarından tekilleştirilmiş alt alan adları.
-- **IP adresi:** ters DNS (PTR) ve ip-api.com üzerinden temel coğrafi konum (anahtarsız, ücretsiz).
-
-### Raporlar
-Her sekmedeki **Raporu kaydet** düğmesi (veya `Ctrl+S`) Markdown dosyasını
-`~/osint-tui/raporlar/<tür>-<hedef>-<tarih>.md` olarak yazar. Aynı adlı dosyanın üzerine yazılmaz.
-
-## Testler
-
-```fish
-.venv/bin/python -m pytest              # ağ gerektirmeyen testler (başsız Textual + sahte ağ)
-.venv/bin/python -m pytest -m canli     # gerçek ağ duman testleri (github/torvalds, example.com DNS)
+```bash
+osint username torvalds                 # live hits, then totals
+osint username torvalds --show-all      # include not found / unknown
+osint email jane@example.com            # grouped sections
+osint email jane@example.com --unsafe   # also run password-reset checks (see below)
+osint domain example.com
+osint domain 1.1.1.1
+osint domain example.com --json         # machine-readable, no banner or progress
+osint username torvalds --save          # also write ./reports/username-torvalds-<date>.md
+osint --no-banner                       # shell without the banner
 ```
 
-## Bilinen sınırlamalar
-- Siteler arayüzlerini değiştirebilir; bir sonuç yanlış görünürse listeyi güncelleyin.
-- holehe modüllerinin önemli bir kısmı güncel değildir; birçok servis `?` döner. `?` "kayıt yok" demek değildir.
-- crt.sh sık sık yoğun olur (HTTP 502 / zaman aşımı); bu durumda tekrar deneyin.
-- ip-api.com ücretsiz sürümü yalnızca HTTP destekler ve dakikada ~45 istekle sınırlıdır.
-- Konum bilgisi (IP) yaklaşıktır, çoğunlukla servis sağlayıcının merkezini gösterir.
+Exit codes: `0` ok, `2` invalid input, `130` scan cancelled.
 
-## Yasal not
-Bu araç kişinin **kendi dijital izini araştırması** ve **CTF/eğitim** amaçlıdır.
-Başkası hakkında izinsiz bilgi toplayıp dosya hazırlamak KVKK (6698 sayılı Kanun) ve
-Türk Ceza Kanunu madde 136 (verileri hukuka aykırı olarak verme veya ele geçirme)
-kapsamına girebilir. Kullanımın sorumluluğu size aittir.
+### Email output
+
+```text
+[*] Breaches
+[*] Registered accounts
+[*] Profiles
+[*] Mail server
+[*] Tip: run 'username <localpart>' to search the local part as a username.
+```
+
+- **Breaches**: XposedOrNot breach list with risk score and password exposure; the terminal shows the 15 newest, reports and `--json` keep all.
+- **Registered accounts**: holehe results. Three groups of holehe modules are skipped by default:
+  - the 4 *password reset* modules (`adobe`, `mail_ru`, `odnoklassniki`, `samsung`) because they can trigger a real email to the target. `--unsafe` includes them.
+  - adult-category modules (never run).
+  - modules that never gave a usable answer in our measurements (65 of 113, see `scripts/measure_email_modules.py`). `--all-modules` includes them.
+- **Profiles**: Gravatar profile (SHA-256 of the address) and GitHub user search by public email (unauthenticated, limited to 10 searches per minute).
+- **Mail server**: MX records and provider detection via dnspython.
+
+## Data sources and credits
+
+| Source | Used for | Notes |
+|---|---|---|
+| [maigret](https://github.com/soxoj/maigret) (MIT) | Site database for username search | `scripts/update_sites.py` converts and prunes its `data.json`; we only read it as data and implement our own checker for its `checkType` values (`status_code`, `message`, `response_url`), `urlProbe`, `headers`, `regexCheck` and `errors` |
+| [holehe](https://github.com/megadose/holehe) | Email account checks | Installed as a library |
+| [XposedOrNot](https://xposedornot.com) | Breach check and analytics | Free API, no key |
+| [Gravatar](https://gravatar.com) | Public profile by email hash | No key |
+| GitHub search API | User lookup by public email | No key, rate limited |
+| [crt.sh](https://crt.sh) | Subdomains from certificate transparency | Often slow or busy |
+| [ip-api.com](https://ip-api.com) | IP geolocation | Free tier, HTTP only, non-commercial use |
+
+Thank you to the maigret maintainers and contributors: the site database is the heart of the username search.
+
+## Keeping the site list healthy
+
+```bash
+python scripts/update_sites.py            # regenerate osint/sites.json from maigret's latest data.json
+python scripts/validate_sites.py          # scan nonsense usernames + each site's known account
+python scripts/validate_sites.py --write --drop-blind   # prune false positives and blind sites
+```
+
+`scripts/blocklist.txt` records every removed site so regenerating keeps the pruning.
+
+## Development
+
+```bash
+uv pip install --python .venv/bin/python -e ".[test]"
+.venv/bin/python -m pytest              # offline tests
+.venv/bin/python -m pytest -m live      # tests that use the real internet
+```
+
+## Known limitations
+
+- Username results are heuristics: a profile page that exists is not proof the account belongs to the person you are looking for, and some sites change their pages without notice.
+- Sites behind bot protection answer "unknown" from some networks.
+- holehe's coverage decays as services change; the dead-module list reflects one network at one point in time.
+- GitHub's unauthenticated search allows 10 requests per minute; crt.sh and ip-api.com may throttle.
+
+## Legal and ethics
+
+This tool is meant for **auditing your own digital footprint, CTF competitions and authorized research**. Collecting data about other people without a lawful basis can violate privacy laws (GDPR, KVKK, CFAA and similar). You are responsible for how you use it. Do not use it for stalking, harassment or unauthorized profiling. The `--unsafe` email checks can send real password-reset emails to the target; use them only on addresses you own.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Site data derived from maigret (MIT).
