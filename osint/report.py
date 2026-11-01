@@ -41,10 +41,16 @@ def _section_md(body: dict) -> list[str]:
     if kind == "kv":
         return [f"- **{k}:** {v}" for k, v in body["items"].items()] or ["None."]
     if kind == "table":
+        lines = [f"- **{k}:** {v}" for k, v in body.get("summary", {}).items()]
+        if lines:
+            lines.append("")
         if not body["rows"]:
-            return ["None."]
-        lines = ["| " + " | ".join(body["headers"]) + " |", "|" + "---|" * len(body["headers"])]
-        lines += ["| " + " | ".join(_cell(c) for c in row) + " |" for row in body["rows"]]
+            lines.append("None.")
+        else:
+            lines += ["| " + " | ".join(body["headers"]) + " |", "|" + "---|" * len(body["headers"])]
+            lines += ["| " + " | ".join(_cell(c) for c in row) + " |" for row in body["rows"]]
+        if body.get("footer"):
+            lines += ["", body["footer"]]
         return lines
     if kind == "list":
         return [f"- `{i}`" for i in body["items"]] or ["None."]
