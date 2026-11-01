@@ -310,8 +310,10 @@ def wayback_summary(domain: str, client=None) -> dict:
         return kv({"Snapshots": "none archived"})
     first, last = stamps[0], stamps[-1]
     items = {
-        "First snapshot": f"{_stamp(first)}  https://web.archive.org/web/{first}/{domain}",
-        "Last snapshot": f"{_stamp(last)}  https://web.archive.org/web/{last}/{domain}",
+        "First snapshot": _stamp(first),
+        "First snapshot link": f"https://web.archive.org/web/{first}/{domain}",
+        "Last snapshot": _stamp(last),
+        "Last snapshot link": f"https://web.archive.org/web/{last}/{domain}",
         "Months with snapshots": f"{len(stamps)}" + (" (list capped at 2000)" if len(stamps) >= 2000 else ""),
     }
     return kv(items)

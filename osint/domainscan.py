@@ -12,7 +12,7 @@ import dns.resolver
 import dns.reversename
 import httpx
 
-from . import net
+from . import domainsec, net
 from .models import ScanResult, bullets, kv, table, text
 
 DNS_TYPES = ["A", "AAAA", "MX", "NS", "TXT"]
@@ -236,6 +236,15 @@ def scan(
         step("Whois", lambda: kv(whois_lookup(target)))
         step("DNS records", lambda: dns_table(dns_lookup(target)))
         step("Subdomains (crt.sh)", lambda: _subdomain_body(crtsh_lookup(target)))
+        step("Email security (SPF / DMARC / DKIM)", lambda: domainsec.email_security(target))
+        step("Exposure (Shodan InternetDB)", lambda: domainsec.exposure(domainsec.resolve_a(target)))
+        step("TLS certificate", lambda: domainsec.tls_certificate(target))
+        step("Wayback Machine", lambda: domainsec.wayback_summary(target))
+    if kind == "ip":
+        step("Exposure (Shodan InternetDB)", lambda: domainsec.exposure([target]))
+    warning = net.bypass_warning("DNS lookups, whois and the TLS probe")
+    if warning:
+        result.notes.append(warning)
     return result
 
 
