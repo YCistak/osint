@@ -8,16 +8,33 @@ Terminal OSINT toolkit: username search across **500 sites**, email recon and do
 
 ## Features
 
+- **Category menu**: start `osint`, pick a number (Username, Email, Domain/IP, Phone, Image), type just the target. Power users can still type `username torvalds` from the main prompt.
 - **Username search** on 500 sites. The site list is derived from [maigret](https://github.com/soxoj/maigret)'s database and pruned against the live internet: every shipped site was checked with random nonsense usernames and none reports a false "found".
+- **Profile details** under each found account: name, bio, location, company, website, avatar. Site-specific parsers for GitHub, GitLab, Bluesky, Keybase, Reddit, Hacker News and DEV, plus an `og:` meta-tag fallback that reuses the page already downloaded.
 - **Email recon** with free sources and no API keys: XposedOrNot breaches, [holehe](https://github.com/megadose/holehe) account checks, Gravatar and GitHub profiles, MX and mail provider detection.
+- **Chained scans**: usernames found in email results (GitHub login, Gravatar username, email local part) can be searched right away (`Scan these usernames? [y/N]`, or `--chain` in one-shot mode) with a combined summary.
 - **Domain / IP recon**: whois, DNS records, subdomains from certificate transparency (crt.sh), reverse DNS and geolocation for IPs.
-- **Interactive shell** (`osint ❯`) with history and tab completion, or **one-shot** commands with `--json` output.
-- **Markdown reports** (`save`), never overwriting an earlier report.
+- **Phone analysis**, fully offline ([phonenumbers](https://github.com/daviddrysdale/python-phonenumbers)): validity, E.164 / international format, country, region, carrier, line type, timezones. Numbers without `+` use region `TR` unless `--region` says otherwise.
+- **Image metadata**: EXIF camera, date, software and GPS (decimal coordinates plus Google Maps / OpenStreetMap links) via Pillow, no exiftool needed.
+- **Reports**: Markdown (`save`) or a single self-contained dark HTML page (`save --html` or a `.html` path) with clickable links and avatars. All external data is HTML-escaped.
+- Interactive shell with history and context-aware tab completion, or **one-shot** commands with `--json` output.
 - Ctrl-C cancels the running scan, not the program; partial results are kept.
 
 ## Install
 
-Requires Python 3.10 or newer.
+Requires Python 3.10 or newer. The easiest way, for everyone:
+
+```bash
+pipx install git+https://github.com/YCistak/osint
+# or
+uv tool install git+https://github.com/YCistak/osint
+
+osint
+```
+
+Try it without installing: `uv tool run --from git+https://github.com/YCistak/osint osint --version`.
+
+From a clone (for development):
 
 ```bash
 git clone https://github.com/YCistak/osint.git
@@ -39,35 +56,44 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 ### Interactive shell
 
 ```text
-$ osint        # clears the terminal first, then shows the banner and commands
+$ osint        # clears the terminal first, then shows the banner and the menu
  ██████╗ ███████╗██╗███╗   ██╗████████╗
 ██╔═══██╗██╔════╝██║████╗  ██║╚══██╔══╝
 ██║   ██║███████╗██║██╔██╗ ██║   ██║
 ██║   ██║╚════██║██║██║╚██╗██║   ██║
 ╚██████╔╝███████║██║██║ ╚████║   ██║
  ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝   ╚═╝
-v0.2 · 500 sites · type 'help'
+v0.3 · 500 sites · type 'help'
 
-  username <name>      search a username on 500 sites
-  email <address>      breaches, accounts, profiles, mail server
-  domain <domain|ip>   whois, DNS, subdomains, geolocation
-  save [path]          save last result as Markdown (default: ./reports/)
-  show all|found       toggle unknown/not-found rows
-  clear                clear screen (and re-show banner + commands)
-  help / exit
+  [1]   Username   search a username on 500 sites
+  [2]   Email      breaches, accounts, profiles, mail server
+  [3]   Domain/IP  whois, DNS, subdomains, geolocation
+  [4]   Phone      country, carrier, line type
+  [5]   Image      EXIF metadata & GPS
+  [0]   Exit
 
-osint ❯ username torvalds
+osint ❯ 1
 ```
 
-| Command | What it does |
+Typing `1` (or `username`) clears the screen and enters the category. The prompt becomes `osint/username ❯` and you only type the target:
+
+```text
+osint/username ❯ torvalds
+```
+
+Inside a category: the target scans, `save [path] [--html]`, `show all|found`, `back` or `0` returns to the menu, `clear`, `help`, `exit`. Tab completion follows the context (category names and numbers in the menu, flags after a target, file paths for images).
+
+| Command (works from the main prompt too) | What it does |
 |---|---|
-| `username <name>` | Search a username on all sites |
-| `email <address> [--unsafe] [--all-modules]` | Breaches, registered accounts, profiles, mail server |
+| `username <name>` | Search a username on all sites, with profile details |
+| `email <address> [--unsafe] [--all-modules]` | Breaches, registered accounts, profiles, mail server; offers to scan the discovered usernames |
 | `domain <domain\|ip>` | Whois, DNS, subdomains (domain) or reverse DNS and geolocation (IP) |
-| `save [path]` | Save the last result as Markdown (default: `./reports/`) |
+| `phone <number> [--region XX]` | Offline phone number analysis |
+| `image <path>` | EXIF metadata and GPS of a local image (`~` is expanded) |
+| `save [path] [--html]` | Save the last result: Markdown by default, HTML with `--html` or a `.html` path (default folder `./reports/`) |
 | `show all\|found` | Re-display the last result; `all` also lists not-found and unknown sites |
-| `help`, `clear` | Help text, clear the screen |
-| `exit`, `quit`, Ctrl-D | Leave |
+| `help`, `clear` | Help text, redraw the current screen |
+| `exit`, `quit`, Ctrl-D | Leave (`0` at the main menu also leaves) |
 
 Output markers: `[+]` found (green), `[-]` not found (red, hidden unless `show all`), `[?]` unknown (yellow), `[*]` info and progress (blue). Sites that could not be checked (blocked, rate limited, timeout) are counted in the summary instead of flooding the screen.
 
@@ -80,8 +106,13 @@ osint email jane@example.com            # grouped sections
 osint email jane@example.com --unsafe   # also run password-reset checks (see below)
 osint domain example.com
 osint domain 1.1.1.1
+osint phone "0555 111 22 33"            # region TR by default
+osint phone 650-253-0000 --region US
+osint image ~/Pictures/photo.jpg        # EXIF + GPS
+osint email jane@example.com --chain    # also search the usernames found in the email results
 osint domain example.com --json         # machine-readable, no banner or progress
 osint username torvalds --save          # also write ./reports/username-torvalds-<date>.md
+osint username torvalds --save out.html # HTML report (or: --save --html)
 osint --no-banner                       # shell without the banner
 ```
 
@@ -114,6 +145,9 @@ Exit codes: `0` ok, `2` invalid input, `130` scan cancelled.
 | [XposedOrNot](https://xposedornot.com) | Breach check and analytics | Free API, no key |
 | [Gravatar](https://gravatar.com) | Public profile by email hash | No key |
 | GitHub search API | User lookup by public email | No key, rate limited |
+| GitHub, GitLab, Bluesky, Keybase, Reddit, Hacker News, DEV APIs | Profile details | Public endpoints, no key |
+| [phonenumbers](https://github.com/daviddrysdale/python-phonenumbers) | Phone analysis | Offline |
+| [Pillow](https://python-pillow.org) | EXIF / GPS reading | Offline |
 | [crt.sh](https://crt.sh) | Subdomains from certificate transparency | Often slow or busy |
 | [ip-api.com](https://ip-api.com) | IP geolocation | Free tier, HTTP only, non-commercial use |
 
@@ -139,6 +173,9 @@ uv pip install --python .venv/bin/python -e ".[test]"
 
 ## Known limitations
 
+- Profile details are best effort: only some sites expose them, the generic meta-tag fallback can pick up unrelated text, and values come from the site unverified.
+- Phone carrier is the original owner of the number range; ported numbers show the old carrier. Line type and region are offline data and may lag behind reality.
+- Image GPS exists only if the camera or phone wrote it; many apps strip EXIF.
 - Username results are heuristics: a profile page that exists is not proof the account belongs to the person you are looking for, and some sites change their pages without notice.
 - Sites behind bot protection answer "unknown" from some networks.
 - holehe's coverage decays as services change; the dead-module list reflects one network at one point in time.

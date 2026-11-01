@@ -18,11 +18,13 @@ sys.path.insert(0, str(ROOT))
 
 from osint import runner, ui  # noqa: E402
 from osint.banner import print_banner  # noqa: E402
-from osint.repl import print_commands  # noqa: E402
+from osint import categories  # noqa: E402
+from osint.banner import print_compact_banner  # noqa: E402
+from osint.repl import print_category, print_menu  # noqa: E402  # noqa: E402
 from osint.sites import load_sites  # noqa: E402
 from osint.models import FOUND, MISSING, UNKNOWN  # noqa: E402
 
-KEEP = 10
+KEEP = 4
 
 
 def main() -> int:
@@ -30,8 +32,11 @@ def main() -> int:
     sites = load_sites()
     console = Console(record=True, file=io.StringIO(), width=100, force_terminal=True, color_system="truecolor", highlight=False)
     print_banner(console, len(sites))
-    print_commands(console, len(sites))
-    console.print(f"[bold cyan]osint[/] [bold blue]❯[/] username {name}")
+    print_menu(console, len(sites))
+    console.print(f"[bold cyan]osint[/] [bold blue]❯[/] 1")
+    print_compact_banner(console, len(sites))
+    print_category(console, categories.find("username"), len(sites))
+    console.print(f"[bold cyan]osint[/][dim]/username[/] [bold blue]❯[/] {name}")
     # Scan quietly (no live progress in the recording), then print a trimmed list
     # of the real result: the first few hits, then the true totals.
     result = runner.run_username(name, sites, console, progress=False)
@@ -40,12 +45,14 @@ def main() -> int:
     ui.info(console, f"searching [bold]{name}[/] on {len(sites)} sites (Ctrl-C cancels)")
     for hit in found[:KEEP]:
         console.print(ui.hit_line(hit))
+        for line in ui.profile_lines(hit):
+            console.print(line)
     if len(found) > KEEP:
         console.print(f"[dim]    ... {len(found) - KEEP} more found (trimmed for this screenshot)[/]")
     console.print()
     ui.info(console, f"{len(result.hits)} sites checked: [green]{counts[FOUND]} found[/], "
                      f"{counts[MISSING]} not found, [yellow]{counts[UNKNOWN]} unknown[/]")
-    console.print("[bold cyan]osint[/] [bold blue]❯[/] ")
+    console.print("[bold cyan]osint[/][dim]/username[/] [bold blue]❯[/] ")
     out = ROOT / "docs" / "screenshot.svg"
     console.save_svg(str(out), title="osint")
     print(f"[+] wrote {out}")
