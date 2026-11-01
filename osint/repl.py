@@ -13,7 +13,8 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from . import categories, domainscan, emailscan, github, image, net, password, phone, report, runner, username
+from . import (categories, domainscan, emailscan, github, history, historycmd, image, net, password, phone,
+               report, runner, username)
 from .banner import clear_screen, print_banner, print_compact_banner
 from .categories import Category
 from .models import ScanResult
@@ -22,13 +23,14 @@ from .ui import error, info, render_chain_summary, render_result
 
 PROMPT_BASE = "osint"
 # commands available everywhere (besides the category commands)
-GLOBAL_COMMANDS = ["save", "show", "variations", "proxy", "help", "clear", "exit", "quit"]
+GLOBAL_COMMANDS = ["save", "show", "history", "variations", "proxy", "help", "clear", "exit", "quit"]
 BACK_WORDS = ("back", "0", "..")
 
 # (usage, description, extra detail lines) -- rows of `help` that are not categories.
 COMMAND_ROWS = [
     ("save [path] [--html]", "save last result (Markdown; .html or --html for a web page)", []),
     ("show all|found", "toggle unknown/not-found rows", []),
+    ("history [show|diff|clear]", "stored scans: list, show <id>, diff <id> <id>, clear", []),
     ("variations on|off", "also search likely variants of usernames (or add -v to one scan)", []),
     ("proxy <url>|tor|off", "route traffic through a proxy / Tor; no argument shows the state", []),
     ("clear", "clear screen and redraw the current menu", []),
@@ -72,6 +74,12 @@ class Session:
     ask: Callable[[str], str] = field(default=lambda prompt: ask_yes_no(prompt))
     secret: Callable[[str], str] = field(default=lambda prompt: read_secret(prompt))
     variations: bool = False
+
+
+def set_last(s: Session, result: ScanResult) -> None:
+    """Remember the result for `save`/`show` and record it in the history (adds a change note)."""
+    history.after_scan(result)
+    s.last = result
 
 
 def prompt_name(s: Session) -> str:
@@ -195,7 +203,7 @@ def cmd_username(s: Session, args: list[str]) -> None:
         result = runner.run_username_variations(name, s.sites, s.console)
     else:
         result = runner.run_username(name, s.sites, s.console)
-    s.last = result
+    set_last(s, result)
     render_result(s.console, result)
 
 
@@ -221,7 +229,7 @@ def cmd_email(s: Session, args: list[str]) -> None:
         return
     result = runner.run_email(args[0], s.console, unsafe="--unsafe" in flags,
                               all_modules="--all-modules" in flags)
-    s.last = result
+    set_last(s, result)
     render_result(s.console, result)
     offer_chain(s, result)
 
@@ -248,7 +256,7 @@ def cmd_domain(s: Session, args: list[str]) -> None:
         error(s.console, f"'{args[0]}' is not a valid domain or IP address")
         return
     result = runner.run_domain(target, s.console)
-    s.last = result
+    set_last(s, result)
     render_result(s.console, result)
 
 
@@ -264,7 +272,7 @@ def cmd_github(s: Session, args: list[str]) -> None:
     except github.GitHubError as e:
         error(s.console, str(e))
         return
-    s.last = result
+    set_last(s, result)
     render_result(s.console, result)
 
 
@@ -301,7 +309,7 @@ def cmd_phone(s: Session, args: list[str]) -> None:
     except phone.PhoneError as e:
         error(s.console, str(e))
         return
-    s.last = result
+    set_last(s, result)
     render_result(s.console, result)
 
 
@@ -315,7 +323,7 @@ def cmd_image(s: Session, args: list[str]) -> None:
     except image.ImageError as e:
         error(s.console, str(e))
         return
-    s.last = result
+    set_last(s, result)
     render_result(s.console, result)
 
 
@@ -405,6 +413,10 @@ def cmd_proxy(s: Session, args: list[str]) -> None:
     info(s.console, net.bypass_warning())
 
 
+def cmd_history(s: Session, args: list[str]) -> None:
+    historycmd.handle(args, s.console, s.ask)
+
+
 def cmd_help(s: Session, args: list[str]) -> None:
     s.console.print(help_text(len(s.sites)), markup=False)
 
@@ -436,6 +448,7 @@ SHARED_HANDLERS = {
     "save": cmd_save,
     "show": cmd_show,
     "proxy": cmd_proxy,
+    "history": cmd_history,
     "variations": cmd_variations,
     "help": cmd_help,
     "?": cmd_help,
@@ -577,6 +590,8 @@ def completion_candidates(s: Session, text: str) -> list[str]:
         words = ["all", "found"]
     elif head == "variations":
         words = ["on", "off"]
+    elif head == "history":
+        words = ["list", "show", "diff", "clear"]
     elif head == "proxy":
         words = ["tor", "off"]
     else:
