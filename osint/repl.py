@@ -22,13 +22,14 @@ from .ui import error, info, render_chain_summary, render_result
 
 PROMPT_BASE = "osint"
 # commands available everywhere (besides the category commands)
-GLOBAL_COMMANDS = ["save", "show", "proxy", "help", "clear", "exit", "quit"]
+GLOBAL_COMMANDS = ["save", "show", "variations", "proxy", "help", "clear", "exit", "quit"]
 BACK_WORDS = ("back", "0", "..")
 
 # (usage, description, extra detail lines) -- rows of `help` that are not categories.
 COMMAND_ROWS = [
     ("save [path] [--html]", "save last result (Markdown; .html or --html for a web page)", []),
     ("show all|found", "toggle unknown/not-found rows", []),
+    ("variations on|off", "also search likely variants of usernames (or add -v to one scan)", []),
     ("proxy <url>|tor|off", "route traffic through a proxy / Tor; no argument shows the state", []),
     ("clear", "clear screen and redraw the current menu", []),
     ("help", "this text", []),
@@ -70,6 +71,7 @@ class Session:
     history: list[str] = field(default_factory=list)
     ask: Callable[[str], str] = field(default=lambda prompt: ask_yes_no(prompt))
     secret: Callable[[str], str] = field(default=lambda prompt: read_secret(prompt))
+    variations: bool = False
 
 
 def prompt_name(s: Session) -> str:
@@ -179,17 +181,33 @@ def split_flags(args: list[str]) -> tuple[list[str], set[str]]:
 # ------------------------------------------------------------------ category commands
 
 def cmd_username(s: Session, args: list[str]) -> None:
-    args, _ = split_flags(args)
-    if len(args) != 1:
-        error(s.console, "usage: username <name>")
+    short_v = "-v" in args
+    args = [a for a in args if a != "-v"]
+    args, flags = split_flags(args)
+    if len(args) != 1 or flags - {"--variations"}:
+        error(s.console, "usage: username <name> [-v]")
         return
     name = args[0]
     if not username.username_valid(name):
         error(s.console, "invalid username (allowed: letters, digits, '.', '_', '-', max 40 chars)")
         return
-    result = runner.run_username(name, s.sites, s.console)
+    if short_v or "--variations" in flags or s.variations:
+        result = runner.run_username_variations(name, s.sites, s.console)
+    else:
+        result = runner.run_username(name, s.sites, s.console)
     s.last = result
     render_result(s.console, result)
+
+
+def cmd_variations(s: Session, args: list[str]) -> None:
+    if not args:
+        info(s.console, f"variations: {'on' if s.variations else 'off'}")
+        return
+    if len(args) != 1 or args[0].lower() not in ("on", "off"):
+        error(s.console, "usage: variations on|off")
+        return
+    s.variations = args[0].lower() == "on"
+    info(s.console, f"variations {'on: username scans also try likely variants of the name' if s.variations else 'off'}")
 
 
 def cmd_email(s: Session, args: list[str]) -> None:
@@ -402,6 +420,7 @@ SHARED_HANDLERS = {
     "save": cmd_save,
     "show": cmd_show,
     "proxy": cmd_proxy,
+    "variations": cmd_variations,
     "help": cmd_help,
     "?": cmd_help,
     "clear": cmd_clear,
@@ -414,7 +433,8 @@ SHARED_HANDLERS = {
 
 categories.register(Category(
     key="username", label="Username", summary="search a username on {sites} sites",
-    target="<name>", example="torvalds", run=cmd_username))
+    target="<name>", example="torvalds", run=cmd_username, flags=("--variations",),
+    extra_help=(("<name> -v", "also try likely variants (or: variations on|off)"),)))
 categories.register(Category(
     key="email", label="Email", summary="breaches, accounts, profiles, mail server",
     target="<address>", example="jane@example.com", run=cmd_email,
@@ -536,6 +556,10 @@ def completion_candidates(s: Session, text: str) -> list[str]:
         words = ["--html"]
     elif head == "show":
         words = ["all", "found"]
+    elif head == "variations":
+        words = ["on", "off"]
+    elif head == "proxy":
+        words = ["tor", "off"]
     else:
         cat = _context_category(s, head)
         words = list(cat.flags) if cat else []
