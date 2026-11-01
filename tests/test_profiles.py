@@ -107,7 +107,7 @@ def test_generic_meta_fallback_reuses_fetched_body():
         calls.append(1)
         return httpx.Response(200, text=PAGE, headers={"content-type": "text/html; charset=utf-8"})
 
-    hit = run(Site("Demo", "https://demo.test/{username}"), handler)
+    hit = run(Site("Demo", "https://demo.test/{username}"), handler, name="jane")
     assert hit.profile == {"Name": "Jane & Co - Designer", "Bio": "Designs things.",
                            "Avatar": "https://img.test/jane.jpg"}
     assert len(calls) == 1  # no refetch
@@ -117,6 +117,12 @@ def test_meta_ignores_title_that_is_just_the_site_name_and_bad_urls():
     page = ('<meta property="og:title" content="Demo"><meta property="og:image" content="javascript:alert(1)">'
             '<meta name="description" content="hello">')
     assert profiles.parse_meta(page, "Demo") == {"Bio": "hello"}
+
+
+def test_meta_boilerplate_without_the_username_is_dropped():
+    page = ('<meta property="og:title" content="GIFs on GIPHY"><meta property="og:description" content="Find GIFs">')
+    assert profiles.parse_meta(page, "Giphy", "torvalds") == {}
+    assert profiles.parse_meta(page.replace("Find GIFs", "torvalds channel"), "Giphy", "torvalds")["Bio"] == "torvalds channel"
 
 
 def test_non_html_non_json_gives_nothing():

@@ -174,8 +174,12 @@ _META_TAG = re.compile(r"<meta\b[^>]*>", re.I)
 _ATTR = re.compile(r"""([a-zA-Z:_-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')""")
 
 
-def parse_meta(body: str, site_name: str = "") -> dict:
-    """Name/Bio/Avatar from og: and description meta tags of an HTML page."""
+def parse_meta(body: str, site_name: str = "", username: str = "") -> dict:
+    """Name/Bio/Avatar from og: and description meta tags of an HTML page.
+
+    With ``username`` given, the tags are kept only when they mention it: that filters
+    out site-wide boilerplate that every page of the site shares.
+    """
     metas: dict[str, str] = {}
     for tag in _META_TAG.findall(body[:200_000]):
         attrs = {m[0].lower(): html.unescape(m[1] or m[2]) for m in _ATTR.findall(tag)}
@@ -189,6 +193,8 @@ def parse_meta(body: str, site_name: str = "") -> dict:
     desc = clean_text(metas.get("og:description") or metas.get("description")
                       or metas.get("twitter:description"))
     image = clean_url(metas.get("og:image") or metas.get("twitter:image"))
+    if username and username.lower() not in f"{title} {desc}".lower():
+        return {}
     return _finish({"Name": title, "Bio": desc, "Avatar": image})
 
 
@@ -201,7 +207,7 @@ def _json(text: str):
         return None
 
 
-def from_response(site_name: str, content_type: str, body: str) -> dict:
+def from_response(site_name: str, content_type: str, body: str, username: str = "") -> dict:
     """Profile fields from a response that was already downloaded (no network)."""
     key = site_name.lower()
     if key in INLINE:
@@ -209,7 +215,7 @@ def from_response(site_name: str, content_type: str, body: str) -> dict:
         if data is not None:
             return INLINE[key](data)
     if "html" in content_type.lower() and "<" in body:
-        return parse_meta(body, site_name)
+        return parse_meta(body, site_name, username)
     return {}
 
 
@@ -241,6 +247,6 @@ async def get_profile(client: httpx.AsyncClient, site_name: str, username: str,
         extra = await fetch_extra(client, site_name, username)
         if extra:
             return extra
-        return from_response(site_name, content_type, body)
+        return from_response(site_name, content_type, body, username)
     except Exception:
         return {}
