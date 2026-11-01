@@ -40,6 +40,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--show-all", action="store_true", help="also list not-found and unknown sites")
     p.add_argument("--concurrency", type=int, default=username.DEFAULT_CONCURRENCY)
     p.add_argument("--timeout", type=float, default=username.DEFAULT_TIMEOUT)
+    p.add_argument("--variations", action="store_true",
+                   help="also search likely variants of the name (max 10: separators, initials, 1, 123, year)")
 
     p = sub.add_parser("email", parents=[common], help="breaches, accounts, profiles, mail server")
     p.add_argument("target", metavar="ADDRESS")
@@ -128,7 +130,8 @@ def one_shot(args: argparse.Namespace) -> int:
         sites = load_sites()
         if not args.no_banner and not quiet:
             print_banner(console, len(sites))
-        result = runner.run_username(
+        search = runner.run_username_variations if args.variations else runner.run_username
+        result = search(
             args.target, sites, console, progress=not quiet,
             show_missing=args.show_all, show_unknown=args.show_all, print_hits=True,
             concurrency=args.concurrency, timeout=args.timeout,
