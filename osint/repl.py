@@ -292,10 +292,10 @@ def cmd_phone(s: Session, args: list[str]) -> None:
 def cmd_image(s: Session, args: list[str]) -> None:
     args, _ = split_flags(args)
     if not args:
-        error(s.console, "usage: image <path>   (e.g. image ~/Pictures/photo.jpg)")
+        error(s.console, "usage: image <path|url>   (e.g. image ~/Pictures/photo.jpg)")
         return
     try:
-        result = image.analyze(" ".join(args))
+        result = image.analyze_target(" ".join(args))
     except image.ImageError as e:
         error(s.console, str(e))
         return
@@ -450,8 +450,8 @@ categories.register(Category(
     extra_help=(("--region XX", "country for numbers without + (default TR)"),),
     cli_usage="phone <number> [--region XX]"))
 categories.register(Category(
-    key="image", label="Image", summary="EXIF metadata & GPS",
-    target="<path>", example="~/Pictures/photo.jpg", run=cmd_image, path_target=True))
+    key="image", label="Image", summary="EXIF, GPS, reverse image search",
+    target="<path|url>", example="~/Pictures/photo.jpg", run=cmd_image, path_target=True))
 categories.register(Category(
     key="password", label="Password", summary="check a password against known breaches",
     target="(hidden prompt)", example="type it, nothing is echoed or saved", run=cmd_password,

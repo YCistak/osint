@@ -59,8 +59,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--region", default=phone.DEFAULT_REGION, metavar="XX",
                    help=f"country code for numbers without '+' (default {phone.DEFAULT_REGION})")
 
-    p = sub.add_parser("image", parents=[common], help="EXIF metadata and GPS of a local image")
-    p.add_argument("target", metavar="PATH")
+    p = sub.add_parser("image", parents=[common], help="EXIF, GPS and reverse image search links (local file or image URL)")
+    p.add_argument("target", metavar="PATH|URL")
 
     p = sub.add_parser("password", parents=[common],
                        help="check a password against Pwned Passwords (k-anonymity; never stored)")
@@ -177,7 +177,7 @@ def one_shot(args: argparse.Namespace) -> int:
         show = "found"
     elif args.command == "image":
         try:
-            result = image.analyze(args.target)
+            result = image.analyze_target(args.target)
         except image.ImageError as e:
             error(errors, str(e))
             return 2
