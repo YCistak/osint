@@ -35,7 +35,20 @@ PASSWORD_RESET_MODULES = {"adobe", "mail_ru", "odnoklassniki", "samsung"}
 ADULT_CATEGORIES = {"porn"}
 # Modules that returned "unknown" for every probe in our measurements (stale
 # endpoints, bot walls). Skipped by default; --all-modules runs them anyway.
-DEAD_MODULES: set[str] = set()
+# Measured with scripts/measure_email_modules.py (3 rounds, 65 of 113 modules never answered).
+DEAD_MODULES: set[str] = {
+    "aboutme", "amocrm", "atlassian", "babeshows", "badeggsonline", "bitmoji",
+    "blablacar", "blackworldforum", "bluegrassrivals", "buymeacoffee", "cambridgemt",
+    "chinaphonearena", "codecademy", "codeigniter", "cpaelites", "cpahero",
+    "cracked_to", "crevado", "deliveroo", "demonforums", "discord", "dominosfr", "ebay",
+    "ello", "evernote", "firefox", "freelancer", "freiberg", "garmin", "github",
+    "google", "hubspot", "imgur", "instagram", "issuu", "komoot", "lastfm",
+    "nattyornot", "ndemiccreations", "nike", "nimble", "nocrm", "nutshell",
+    "onlinesequencer", "patreon", "pinterest", "pipedrive", "rocketreach", "sevencups",
+    "snapchat", "soundcloud", "spotify", "strava", "teamleader", "therianguide",
+    "thevapingforum", "tumblr", "tunefind", "venmo", "vivino", "voxmedia", "vrbo",
+    "vsco", "xing", "yahoo",
+}
 
 MX_PROVIDERS = {
     "google.com": "Google Workspace / Gmail",

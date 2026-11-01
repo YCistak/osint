@@ -220,6 +220,14 @@ def test_load_modules_filters():
     assert len(unsafe) == len(default) + len(es.PASSWORD_RESET_MODULES)
 
 
+def test_dead_modules_skipped_unless_all_modules():
+    default, skipped = es.load_modules()
+    assert not {m.__name__ for m in default} & es.DEAD_MODULES
+    everything, skipped_all = es.load_modules(all_modules=True)
+    assert {m.__name__ for m in everything} >= es.DEAD_MODULES
+    assert skipped_all < skipped
+
+
 def test_run_holehe_marks_crashing_and_silent_modules_unknown():
     async def good(email, client, out):
         out.append({"name": "good", "domain": "good.com", "exists": True})
