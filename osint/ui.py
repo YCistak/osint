@@ -125,6 +125,9 @@ def render_section(console: Console, title: str, body: dict) -> None:
     elif kind == "list":
         for item in body["items"]:
             console.print(Text("    "), Text(item, style="cyan"), sep="")
+    elif kind == "steps":
+        for i, item in enumerate(body["items"], 1):
+            console.print(Text(f"    {i}. ", style="bold cyan"), Text(item), sep="")
     else:
         console.print(Text("    " + body.get("text", ""), style="dim"))
 
