@@ -193,3 +193,70 @@ def exposure(ips: list[str], client=None) -> dict:
     body = table(["IP", "Open ports", "Hostnames", "Vulnerabilities (CVE)", "Tags"], rows)
     body["footer"] = "Passive data from Shodan InternetDB; nothing was scanned from this machine. Listed CVEs are candidates, not confirmed."
     return body
+
+
+# ---------------------------------------------------------------- TLS certificate
+
+def _name_text(rdns) -> str:
+    return ", ".join(f"{k}={v}" for rdn in rdns for k, v in rdn)
+
+
+def parse_cert(cert: dict, now: float | None = None) -> dict[str, str]:
+    """Readable fields of an ``ssl.getpeercert()`` dict."""
+    import ssl
+    import time
+
+    now = now if now is not None else time.time()
+    not_before = ssl.cert_time_to_seconds(cert["notBefore"])
+    not_after = ssl.cert_time_to_seconds(cert["notAfter"])
+    days_left = int((not_after - now) // 86400)
+    sans = [v for k, v in cert.get("subjectAltName", ()) if k == "DNS"]
+    if days_left < 0:
+        status = f"EXPIRED {-days_left} day(s) ago"
+    elif days_left < 14:
+        status = f"{days_left} day(s) left (renew soon)"
+    else:
+        status = f"{days_left} day(s) left"
+    out = {
+        "Subject": _name_text(cert.get("subject", ())),
+        "Issuer": _name_text(cert.get("issuer", ())),
+        "Valid from": _fmt_time(not_before),
+        "Valid until": _fmt_time(not_after),
+        "Time left": status,
+        "Alternative names": ", ".join(sans[:15]) + (f" (+{len(sans) - 15} more)" if len(sans) > 15 else ""),
+        "Serial number": str(cert.get("serialNumber", "")),
+    }
+    return {k: v for k, v in out.items() if v}
+
+
+def _fmt_time(ts: float) -> str:
+    from datetime import datetime, timezone
+
+    return datetime.fromtimestamp(ts, timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+
+def fetch_cert(host: str, port: int = 443, timeout: float = 6.0) -> dict:
+    """Connect, validate against the system trust store and return the peer certificate."""
+    import socket
+    import ssl
+
+    context = ssl.create_default_context()
+    try:
+        with socket.create_connection((host, port), timeout=timeout) as sock:
+            with context.wrap_socket(sock, server_hostname=host) as tls:
+                return tls.getpeercert()
+    except ssl.SSLCertVerificationError as e:
+        raise RuntimeError(f"certificate did not validate: {e.verify_message or e}")
+    except ssl.SSLError as e:
+        raise RuntimeError(f"TLS handshake failed ({e.reason or type(e).__name__})")
+    except socket.timeout:
+        raise RuntimeError(f"connection to {host}:{port} timed out")
+    except OSError as e:
+        raise RuntimeError(f"could not connect to {host}:{port} ({type(e).__name__})")
+
+
+def tls_certificate(domain: str, fetch=fetch_cert) -> dict:
+    from .models import kv
+
+    cert = fetch(domain)
+    return kv(parse_cert(cert))
