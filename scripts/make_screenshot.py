@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT))
 
 from osint import runner, ui  # noqa: E402
 from osint.banner import print_banner  # noqa: E402
+from osint.repl import print_commands  # noqa: E402
 from osint.sites import load_sites  # noqa: E402
 from osint.models import FOUND, MISSING, UNKNOWN  # noqa: E402
 
@@ -29,6 +30,7 @@ def main() -> int:
     sites = load_sites()
     console = Console(record=True, file=io.StringIO(), width=100, force_terminal=True, color_system="truecolor", highlight=False)
     print_banner(console, len(sites))
+    print_commands(console, len(sites))
     console.print(f"[bold cyan]osint[/] [bold blue]❯[/] username {name}")
     # Scan quietly (no live progress in the recording), then print a trimmed list
     # of the real result: the first few hits, then the true totals.

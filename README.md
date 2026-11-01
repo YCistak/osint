@@ -39,7 +39,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 ### Interactive shell
 
 ```text
-$ osint
+$ osint        # clears the terminal first, then shows the banner and commands
  ██████╗ ███████╗██╗███╗   ██╗████████╗
 ██╔═══██╗██╔════╝██║████╗  ██║╚══██╔══╝
 ██║   ██║███████╗██║██╔██╗ ██║   ██║
@@ -47,6 +47,14 @@ $ osint
 ╚██████╔╝███████║██║██║ ╚████║   ██║
  ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝   ╚═╝
 v0.2 · 500 sites · type 'help'
+
+  username <name>      search a username on 500 sites
+  email <address>      breaches, accounts, profiles, mail server
+  domain <domain|ip>   whois, DNS, subdomains, geolocation
+  save [path]          save last result as Markdown (default: ./reports/)
+  show all|found       toggle unknown/not-found rows
+  clear                clear screen (and re-show banner + commands)
+  help / exit
 
 osint ❯ username torvalds
 ```
