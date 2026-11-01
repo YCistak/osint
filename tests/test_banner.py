@@ -22,8 +22,8 @@ def test_logo_is_block_letters_without_clearing_screen():
 
 def test_subtitle_line():
     last = [l for l in render(512).splitlines() if l.strip()][-1]
-    assert last.strip() == "v0.2 · 512 sites · type 'help'"
-    assert __version__.startswith("0.2")
+    assert last.strip() == "v0.3 · 512 sites · type 'help'"
+    assert __version__.startswith("0.3")
 
 
 def test_gradient_goes_from_cyan_to_blue():

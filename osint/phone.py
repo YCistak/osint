@@ -60,6 +60,8 @@ def analyze(raw: str, region: str = DEFAULT_REGION) -> ScanResult:
         "Line type": line,
         "Timezones": ", ".join(zones),
     }
+    if items["Region"] == items["Country"]:
+        items["Region"] = ""
     result = ScanResult("phone", items["E.164"])
     result.sections["Number"] = kv({k: v for k, v in items.items() if v})
     if not valid:

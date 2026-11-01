@@ -39,8 +39,10 @@ def test_split_flags():
 
 
 def test_completion_list_contains_all_commands():
-    for cmd in ["username", "email", "domain", "save", "show", "help", "clear", "exit", "quit"]:
-        assert cmd in repl.COMMANDS
+    s, _ = make_session()
+    words = repl.completion_candidates(s, "")
+    for cmd in ["username", "email", "domain", "phone", "image", "save", "show", "help", "clear", "exit", "quit"]:
+        assert cmd in words
 
 
 # ---- dispatch -------------------------------------------------------------
@@ -58,8 +60,8 @@ def test_help_mentions_every_command_and_site_count():
     s, buf = make_session()
     repl.execute(s, "help")
     out = buf.getvalue()
-    for word in ["username <name>", "email <address>", "domain <domain|ip>", "save [path]",
-                 "show all|found", "clear", "exit", "Ctrl-C"]:
+    for word in ["username <name>", "email <address>", "domain <domain|ip>", "phone <number>", "image <path>",
+                 "save [path] [--html]", "show all|found", "clear", "exit", "Ctrl-C"]:
         assert word in out
     assert "1 sites" in out
 
@@ -74,8 +76,9 @@ def test_exit_commands(line):
 def test_username_validation_message():
     s, buf = make_session()
     repl.execute(s, "username ../etc")
-    repl.execute(s, "username")
-    assert buf.getvalue().count("[!]") == 2 and s.last is None
+    assert buf.getvalue().count("[!]") == 1 and s.last is None
+    repl.execute(s, "username")  # a bare category name enters the category instead
+    assert s.category.key == "username"
 
 
 def test_username_runs_scan_and_stores_last(monkeypatch):
@@ -173,7 +176,7 @@ def test_plain_stdin_loop_processes_lines_until_eof(monkeypatch):
     code = repl.run(console, [Site("Demo", "https://demo.test/{username}")], banner=True)
     out = buf.getvalue()
     assert code == 0
-    assert "██████╗" in out and "v0.2 · 1 sites · type 'help'" in out
+    assert "██████╗" in out and "v0.3 · 1 sites · type 'help'" in out
     assert "osint ❯ help" in out and "unknown command 'frobnicate'" in out
 
 
@@ -193,10 +196,10 @@ def tty_console(buf):
 
 def test_command_list_shown_under_banner_and_in_help_share_rows():
     buf = io.StringIO()
-    repl.print_commands(Console(file=buf, force_terminal=False, width=100), 500)
+    repl.print_menu(Console(file=buf, force_terminal=False, width=100), 500)
     out = buf.getvalue()
-    for word in ["username <name>", "search a username on 500 sites", "email <address>", "domain <domain|ip>",
-                 "save [path]", "show all|found", "clear", "help / exit"]:
+    for word in ["[1]", "Username", "search a username on 500 sites", "[2]", "Email",
+                 "[3]", "Domain/IP", "[4]", "Phone", "[5]", "Image", "EXIF metadata & GPS", "[0]", "Exit"]:
         assert word in out
     assert "│" not in out and "─" not in out  # borderless
 
@@ -207,7 +210,7 @@ def test_clear_command_redraws_banner_and_commands_on_tty():
     repl.execute(s, "clear")
     out = buf.getvalue()
     assert out.startswith("\x1b[H\x1b[2J\x1b[3J")
-    assert "██████╗" in out and "username <name>" in out
+    assert "██████╗" in out and "[1]" in out and "Username" in out
 
 
 def test_run_clears_on_tty_but_not_when_banner_off_or_not_tty(monkeypatch):
@@ -215,10 +218,10 @@ def test_run_clears_on_tty_but_not_when_banner_off_or_not_tty(monkeypatch):
     sites = [Site("Demo", "https://demo.test/{username}")]
     buf = io.StringIO()
     repl.run(tty_console(buf), sites, banner=True)
-    assert buf.getvalue().startswith("\x1b[H\x1b[2J\x1b[3J") and "username <name>" in buf.getvalue()
+    assert buf.getvalue().startswith("\x1b[H\x1b[2J\x1b[3J") and "[1]" in buf.getvalue()
     buf = io.StringIO()
     repl.run(tty_console(buf), sites, banner=False)
-    assert "\x1b[3J" not in buf.getvalue() and "username <name>" not in buf.getvalue()
+    assert "\x1b[3J" not in buf.getvalue() and "[1]" not in buf.getvalue()
     buf = io.StringIO()
     repl.run(Console(file=buf, force_terminal=False), sites, banner=True)
-    assert "\x1b[3J" not in buf.getvalue() and "username <name>" in buf.getvalue()
+    assert "\x1b[3J" not in buf.getvalue() and "[1]" in buf.getvalue()

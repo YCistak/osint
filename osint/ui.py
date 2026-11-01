@@ -31,7 +31,7 @@ def info(console: Console, message: str) -> None:
 
 
 def error(console: Console, message: str) -> None:
-    console.print(Text("[!]", style="bold red"), message)
+    console.print(Text("[!]", style="bold red"), message, markup=False)
 
 
 def hit_line(hit: Hit) -> Text:

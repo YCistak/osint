@@ -61,6 +61,16 @@ def print_banner(console: Console, site_count: int) -> None:
     console.print()
 
 
+def print_compact_banner(console: Console, site_count: int) -> None:
+    """One-line banner for the category screens."""
+    width = 5
+    word = Text()
+    for i, ch in enumerate("OSINT"):
+        word.append(ch, style="bold " + _lerp(START, END, i / (width - 1)))
+    console.print(word, Text("  "), subtitle(site_count))
+    console.print()
+
+
 CLEAR_SEQUENCE = "\033[H\033[2J\033[3J"  # home, erase screen, erase scrollback
 
 
