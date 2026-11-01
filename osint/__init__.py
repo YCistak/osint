@@ -1,3 +1,3 @@
-"""osint-tui: kişisel dijital iz denetimi için terminal arayüzlü OSINT aracı."""
+"""osint - terminal OSINT toolkit."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
