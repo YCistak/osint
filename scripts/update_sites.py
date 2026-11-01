@@ -8,6 +8,7 @@ Alexa rank that our checker can handle, and write a compact file.
 Usage:
     python scripts/update_sites.py                # download and write
     python scripts/update_sites.py --input data.json --limit 500
+Engine-based sites (Discourse, XenForo, ...) are expanded from their engine template.
 Sites listed in scripts/blocklist.txt (false positives found by
 scripts/validate_sites.py) are always left out.
 """
@@ -44,7 +45,7 @@ def load_blocklist(path: Path = BLOCKLIST) -> set[str]:
 
 def usable(name: str, site: dict) -> bool:
     """True if our checker can evaluate this maigret entry."""
-    if site.get("disabled") or site.get("engine"):
+    if site.get("disabled"):
         return False
     if not site.get("alexaRank") or "url" not in site:
         return False
@@ -99,10 +100,23 @@ def convert(name: str, site: dict) -> dict:
     return out
 
 
+def with_engine(site: dict, engines: dict) -> dict:
+    """Apply a maigret engine template (e.g. Discourse, XenForo) under the site's own keys."""
+    name = site.get("engine")
+    if not name:
+        return site
+    template = engines.get(name, {}).get("site")
+    if not isinstance(template, dict):
+        return {**site, "disabled": True}  # unknown engine: cannot be checked
+    return {**template, **site}
+
+
 def build(data: dict, limit: int, blocked: set[str]) -> list[dict]:
+    engines = data.get("engines", {})
+    merged = ((name, with_engine(s, engines)) for name, s in data["sites"].items())
     candidates = [
         (s["alexaRank"], name, s)
-        for name, s in data["sites"].items()
+        for name, s in merged
         if name not in blocked and usable(name, s)
     ]
     candidates.sort(key=lambda t: (t[0], t[1].lower()))
