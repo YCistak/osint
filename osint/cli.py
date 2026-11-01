@@ -7,7 +7,7 @@ import getpass
 import json
 import sys
 
-from . import __version__, domainscan, emailscan, image, net, password, phone, report, repl, runner, username
+from . import __version__, domainscan, emailscan, github, image, net, password, phone, report, repl, runner, username
 from .banner import print_banner
 from .sites import SiteListError, load_sites
 from .ui import error, info, make_console, render_chain_summary, render_result
@@ -33,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="Use it only on yourself, in CTFs, or with authorization.",
     )
     parser.add_argument("--version", action="version", version=f"osint {__version__}")
-    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain,phone,image,password}")
+    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain,phone,image,github,password}")
 
     p = sub.add_parser("username", parents=[common], help="search a username on 500 sites")
     p.add_argument("target", metavar="NAME")
@@ -61,6 +61,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("image", parents=[common], help="EXIF, GPS and reverse image search links (local file or image URL)")
     p.add_argument("target", metavar="PATH|URL")
+
+    p = sub.add_parser("github", parents=[common],
+                       help="deep GitHub profile: repos, languages, activity, emails in commits")
+    p.add_argument("target", metavar="USERNAME")
 
     p = sub.add_parser("password", parents=[common],
                        help="check a password against Pwned Passwords (k-anonymity; never stored)")
@@ -153,6 +157,15 @@ def one_shot(args: argparse.Namespace) -> int:
                 return 2
             result = phone.analyze(args.target, args.region.upper())
         except phone.PhoneError as e:
+            error(errors, str(e))
+            return 2
+        if not args.no_banner and not quiet:
+            print_banner(console, len(load_sites()))
+        show = "found"
+    elif args.command == "github":
+        try:
+            result = github.analyze(args.target)
+        except github.GitHubError as e:
             error(errors, str(e))
             return 2
         if not args.no_banner and not quiet:
