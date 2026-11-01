@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from . import categories, domainscan, emailscan, image, net, phone, report, runner, username
+from . import categories, domainscan, emailscan, image, net, password, phone, report, runner, username
 from .banner import clear_screen, print_banner, print_compact_banner
 from .categories import Category
 from .models import ScanResult
@@ -48,6 +48,18 @@ def ask_yes_no(prompt: str) -> str:
         return "n"
 
 
+def read_secret(prompt: str) -> str:
+    """Read a secret without echo. Non-interactive stdin is read as a plain line (no echo either)."""
+    import getpass
+
+    try:
+        if sys.stdin.isatty():
+            return getpass.getpass(prompt)
+        return sys.stdin.readline().rstrip("\r\n")
+    except (EOFError, KeyboardInterrupt):
+        return ""
+
+
 @dataclass
 class Session:
     console: Console
@@ -57,6 +69,7 @@ class Session:
     category: Category | None = None  # None = main menu
     history: list[str] = field(default_factory=list)
     ask: Callable[[str], str] = field(default=lambda prompt: ask_yes_no(prompt))
+    secret: Callable[[str], str] = field(default=lambda prompt: read_secret(prompt))
 
 
 def prompt_name(s: Session) -> str:
@@ -101,7 +114,8 @@ def print_category(console: Console, cat: Category, site_count: int) -> None:
     table = Table.grid(padding=(0, 3))
     table.add_column(style="bold cyan", no_wrap=True)
     table.add_column(style="dim")
-    table.add_row(Text(f"  {cat.target}"), Text(f"just type it to scan, e.g. {cat.example}"))
+    hint = cat.example if cat.secret else f"just type it to scan, e.g. {cat.example}"
+    table.add_row(Text(f"  {cat.target}"), Text(hint))
     for usage, desc in cat.extra_help:
         table.add_row(Text("  " + usage), Text(desc))
     table.add_row(Text("  save [path] [--html]"), Text("save the last result"))
@@ -271,6 +285,34 @@ def cmd_image(s: Session, args: list[str]) -> None:
     render_result(s.console, result)
 
 
+def check_password(s: Session, pw: str) -> None:
+    """Run one password check and print it. The result is not kept (no `save`, no history)."""
+    try:
+        result = password.analyze(pw)
+    except password.PasswordError as e:
+        error(s.console, str(e))
+        return
+    render_result(s.console, result)
+
+
+def cmd_password(s: Session, args: list[str]) -> None:
+    if s.category is not None and s.category.secret and args:
+        # called by the hidden prompt of the category: args[0] is the password
+        check_password(s, args[0])
+        return
+    if args:
+        error(s.console, "never type a password on the command line (it would be kept in the shell "
+                         "history); enter the category and use the hidden prompt instead")
+        return
+    check_password_prompt(s)
+
+
+def check_password_prompt(s: Session) -> None:
+    pw = s.secret("Password (hidden, empty line cancels): ")
+    if pw:
+        check_password(s, pw)
+
+
 # ------------------------------------------------------------------ shared commands
 
 def cmd_save(s: Session, args: list[str]) -> None:
@@ -352,6 +394,8 @@ def go_back(s: Session) -> None:
 def enter_category(s: Session, cat: Category) -> None:
     s.category = cat
     draw_screen(s)
+    if cat.secret:
+        info(s.console, "input is hidden and never saved; an empty line returns to the menu")
 
 
 SHARED_HANDLERS = {
@@ -388,12 +432,29 @@ categories.register(Category(
 categories.register(Category(
     key="image", label="Image", summary="EXIF metadata & GPS",
     target="<path>", example="~/Pictures/photo.jpg", run=cmd_image, path_target=True))
+categories.register(Category(
+    key="password", label="Password", summary="check a password against known breaches",
+    target="(hidden prompt)", example="type it, nothing is echoed or saved", run=cmd_password,
+    secret=True, cli_usage="password",
+    extra_help=(("(hidden)", "only 5 characters of the SHA-1 hash leave this machine"),)))
 
 
 # ------------------------------------------------------------------ dispatch
 
 def execute(s: Session, line: str) -> None:
     """Run one prompt line. Never raises for user mistakes."""
+    if s.category is not None and s.category.secret:
+        # inside a secret category the whole line is the secret: no parsing, no echo, no history
+        raw = line.rstrip("\r\n")
+        if not raw.strip():
+            go_back(s)
+        else:
+            try:
+                s.category.run(s, [raw])
+            except KeyboardInterrupt:
+                s.console.print()
+                info(s.console, "cancelled")
+        return
     try:
         cmd, args = parse_line(line)
     except ValueError as e:
@@ -492,10 +553,24 @@ def wants_path(s: Session, text: str) -> bool:
     return bool(cat and cat.path_target)
 
 
+def history_excluded(line: str) -> bool:
+    """True for lines that must never reach the history file: a secret category word with arguments."""
+    parts = line.split(None, 1)
+    if len(parts) < 2:
+        return False
+    cat = categories.find(parts[0])
+    return bool(cat and cat.secret)
+
+
 def _make_prompt_session(session: Session):
     from prompt_toolkit import PromptSession
     from prompt_toolkit.completion import Completer, Completion, PathCompleter
     from prompt_toolkit.history import FileHistory
+
+    class SafeFileHistory(FileHistory):
+        def store_string(self, string: str) -> None:
+            if not history_excluded(string):
+                super().store_string(string)
 
     class ContextCompleter(Completer):
         def __init__(self) -> None:
@@ -516,7 +591,7 @@ def _make_prompt_session(session: Session):
     path = history_path()
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        history = FileHistory(str(path))
+        history = SafeFileHistory(str(path))
     except OSError:
         from prompt_toolkit.history import InMemoryHistory
 
@@ -530,7 +605,10 @@ def _read_line_plain(console: Console, s: Session) -> str | None:
     line = sys.stdin.readline()
     if line == "":
         return None
-    console.print(line.rstrip("\n"), markup=False)  # echo so transcripts read naturally
+    if not (s.category and s.category.secret):  # never echo a secret
+        console.print(line.rstrip("\n"), markup=False)  # echo so transcripts read naturally
+    else:
+        console.print()
     return line
 
 
@@ -542,11 +620,17 @@ def run(console: Console, sites: list[Site], *, banner: bool = True) -> int:
     interactive = sys.stdin.isatty() and sys.stdout.isatty()
     prompt_session = _make_prompt_session(session) if interactive else None
 
+    from prompt_toolkit import PromptSession
     from prompt_toolkit.formatted_text import ANSI
+    from prompt_toolkit.history import DummyHistory
+
+    secret_session = PromptSession(history=DummyHistory(), enable_history_search=False)
 
     while session.running:
         try:
-            if prompt_session is not None:
+            if prompt_session is not None and session.category is not None and session.category.secret:
+                line = secret_session.prompt(ANSI(prompt_ansi(session)), is_password=True)
+            elif prompt_session is not None:
                 line = prompt_session.prompt(ANSI(prompt_ansi(session)))
             else:
                 line = _read_line_plain(console, session)

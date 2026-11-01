@@ -31,11 +31,11 @@ def last_screen(buf):
 
 def test_registry_order_and_menu_rows():
     keys = [c.key for c in categories.REGISTRY]
-    assert keys == ["username", "email", "domain", "phone", "image"]
+    assert keys == ["username", "email", "domain", "phone", "image", "password"]
     rows = categories.menu_rows(500)
     assert rows[0] == ("1", "Username", "search a username on 500 sites")
     assert rows[-1] == ("0", "Exit", "")
-    assert [r[0] for r in rows] == ["1", "2", "3", "4", "5", "0"]
+    assert [r[0] for r in rows] == [str(i) for i in range(1, len(keys) + 1)] + ["0"]
 
 
 def test_find_by_number_name_label_alias():
@@ -51,9 +51,10 @@ def test_new_category_appears_in_menu_help_and_completion_without_menu_code(monk
     categories.register(Category("crypto", "Crypto", "wallet lookup", "<address>", "bc1q...",
                                  run=lambda s, a: seen.append(a), flags=("--chain",)))
     s, buf = make_session()
+    n = len(categories.REGISTRY)
     repl.print_menu(s.console, 1)
-    assert "[6]" in buf.getvalue() and "Crypto" in buf.getvalue() and "wallet lookup" in buf.getvalue()
-    repl.execute(s, "6")
+    assert f"[{n}]" in buf.getvalue() and "Crypto" in buf.getvalue() and "wallet lookup" in buf.getvalue()
+    repl.execute(s, str(n))
     assert s.category.key == "crypto" and "crypto" in repl.prompt_text(s)
     repl.execute(s, "bc1qxyz")
     assert seen == [["bc1qxyz"]]
