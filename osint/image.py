@@ -127,3 +127,109 @@ def analyze(path: str) -> ScanResult:
     elif not coords:
         result.notes.append("No GPS coordinates in this image.")
     return result
+
+
+# ---------------------------------------------------------------- reverse image search
+
+DOWNLOAD_LIMIT = 20 * 1024 * 1024
+UPLOAD_PAGES = {
+    "Google Lens": "https://lens.google.com/",
+    "Yandex Images": "https://yandex.com/images/",
+    "Bing Visual Search": "https://www.bing.com/visualsearch",
+    "TinEye": "https://tineye.com/",
+}
+
+
+def is_url(target: str) -> bool:
+    return target.strip().lower().startswith(("http://", "https://"))
+
+
+def reverse_search_links(url: str) -> dict[str, str]:
+    """Search-by-URL links of the four big reverse image engines (nothing is fetched)."""
+    from urllib.parse import quote
+
+    q = quote(url.strip(), safe="")
+    return {
+        "Google Lens": f"https://lens.google.com/uploadbyurl?url={q}",
+        "Yandex Images": f"https://yandex.com/images/search?rpt=imageview&url={q}",
+        "Bing Visual Search": f"https://www.bing.com/images/search?view=detailv2&iss=sbi&q=imgurl:{q}",
+        "TinEye": f"https://tineye.com/search?url={q}",
+    }
+
+
+def download_image(url: str, client=None, limit: int = DOWNLOAD_LIMIT) -> Path:
+    """Download an image URL to a temporary file (data only, never executed).
+
+    Checks the content type and stops at ``limit`` bytes. The caller deletes the file.
+    """
+    import tempfile
+
+    import httpx
+
+    from . import net
+
+    own = client is None
+    client = client or net.sync_client(timeout=20.0, follow_redirects=True,
+                                       headers={"User-Agent": "osint-cli (+https://github.com/YCistak/osint)"})
+    path: Path | None = None
+    try:
+        with client.stream("GET", url) as resp:
+            if resp.status_code != 200:
+                raise ImageError(f"could not download the image (HTTP {resp.status_code})")
+            ctype = resp.headers.get("content-type", "").split(";")[0].strip().lower()
+            if not ctype.startswith("image/"):
+                raise ImageError(f"the URL is not an image (content type '{ctype or 'unknown'}')")
+            declared = resp.headers.get("content-length", "")
+            if declared.isdigit() and int(declared) > limit:
+                raise ImageError(f"the image is larger than {limit // (1024 * 1024)} MB")
+            fd, name = tempfile.mkstemp(prefix="osint-img-", suffix=".bin")
+            path = Path(name)
+            size = 0
+            with open(fd, "wb") as out:
+                for chunk in resp.iter_bytes():
+                    size += len(chunk)
+                    if size > limit:
+                        raise ImageError(f"the image is larger than {limit // (1024 * 1024)} MB")
+                    out.write(chunk)
+        return path
+    except ImageError:
+        if path:
+            path.unlink(missing_ok=True)
+        raise
+    except httpx.HTTPError as e:
+        if path:
+            path.unlink(missing_ok=True)
+        raise ImageError(f"could not download the image ({type(e).__name__})") from None
+    finally:
+        if own:
+            client.close()
+
+
+def analyze_target(target: str, client=None) -> ScanResult:
+    """EXIF of a local file or an image URL, plus reverse image search links."""
+    from urllib.parse import urlsplit
+
+    from .models import kv, text
+
+    target = target.strip()
+    if is_url(target):
+        path = download_image(target, client)
+        try:
+            result = analyze(str(path))
+        finally:
+            path.unlink(missing_ok=True)
+        name = Path(urlsplit(target).path).name or urlsplit(target).netloc
+        result.target = name
+        file_items = dict(result.sections.get("File", {}).get("items", {}))
+        file_items["File"] = name
+        file_items["Source"] = target
+        result.sections["File"] = kv(file_items)
+        result.sections["Reverse image search"] = kv(reverse_search_links(target))
+    else:
+        result = analyze(target)
+        links = dict(UPLOAD_PAGES)
+        result.sections["Reverse image search"] = kv(links)
+        result.notes.append(
+            "Reverse search for a local file: open one of the pages above and upload the file yourself; "
+            "osint does not upload your image anywhere. For a public image URL, the search links are built automatically.")
+    return result
