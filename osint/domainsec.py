@@ -119,7 +119,7 @@ def email_security(domain: str) -> dict:
             rec, verdict = assess_dkim(sel, txt_records(f"{sel}._domainkey.{domain}", resolver))
         except RuntimeError:
             rec, verdict = "", "Lookup timed out"
-        found += rec != ""
+        found += verdict == "Key published"
         rows.append([f"DKIM ({sel})", _short(rec) or "-", verdict])
     body = table(["Check", "Record", "Assessment"], rows)
     body["footer"] = ("DKIM selectors are guessed (default, google, selector1, selector2, k1); "
@@ -190,7 +190,7 @@ def exposure(ips: list[str], client=None) -> dict:
     finally:
         if own:
             client.close()
-    body = table(["IP", "Open ports", "Hostnames", "Vulnerabilities (CVE)", "Tags"], rows)
+    body = table(["IP", "Open ports", "Hostnames", "CVEs", "Tags"], rows)
     body["footer"] = "Passive data from Shodan InternetDB; nothing was scanned from this machine. Listed CVEs are candidates, not confirmed."
     return body
 
