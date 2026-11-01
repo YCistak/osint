@@ -260,3 +260,58 @@ def tls_certificate(domain: str, fetch=fetch_cert) -> dict:
 
     cert = fetch(domain)
     return kv(parse_cert(cert))
+
+
+# ---------------------------------------------------------------- Wayback Machine
+
+CDX_URL = "https://web.archive.org/cdx/search/cdx"
+
+
+def parse_cdx(payload) -> list[str]:
+    """Timestamps from a CDX ``output=json`` answer (the first row is the header)."""
+    if not isinstance(payload, list):
+        raise ValueError("unexpected CDX answer")
+    return [row[0] for row in payload[1:] if isinstance(row, list) and row and str(row[0]).isdigit()]
+
+
+def _stamp(ts: str) -> str:
+    return f"{ts[:4]}-{ts[4:6]}-{ts[6:8]}" if len(ts) >= 8 else ts
+
+
+def wayback_summary(domain: str, client=None) -> dict:
+    """First and last archived capture and how many distinct months have captures."""
+    import httpx
+
+    from . import net
+    from .models import kv
+
+    own = client is None
+    client = client or net.sync_client(timeout=25.0, follow_redirects=True)
+    try:
+        resp = client.get(CDX_URL, params={"url": domain, "output": "json", "fl": "timestamp",
+                                           "collapse": "timestamp:6", "limit": 2000})
+    except httpx.TimeoutException:
+        raise RuntimeError("the Wayback Machine timed out")
+    except httpx.HTTPError as e:
+        raise RuntimeError(f"could not reach web.archive.org ({type(e).__name__})")
+    finally:
+        if own:
+            client.close()
+    if resp.status_code != 200:
+        raise RuntimeError(f"the Wayback Machine answered HTTP {resp.status_code}")
+    text_body = resp.text.strip()
+    if not text_body:
+        return kv({"Snapshots": "none archived"})
+    try:
+        stamps = parse_cdx(resp.json())
+    except ValueError:
+        raise RuntimeError("the Wayback Machine returned an invalid answer")
+    if not stamps:
+        return kv({"Snapshots": "none archived"})
+    first, last = stamps[0], stamps[-1]
+    items = {
+        "First snapshot": f"{_stamp(first)}  https://web.archive.org/web/{first}/{domain}",
+        "Last snapshot": f"{_stamp(last)}  https://web.archive.org/web/{last}/{domain}",
+        "Months with snapshots": f"{len(stamps)}" + (" (list capped at 2000)" if len(stamps) >= 2000 else ""),
+    }
+    return kv(items)
