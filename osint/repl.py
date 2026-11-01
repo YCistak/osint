@@ -162,7 +162,9 @@ def cmd_help(s: Session, args: list[str]) -> None:
 
 
 def cmd_clear(s: Session, args: list[str]) -> None:
-    s.console.clear()
+    clear_screen(s.console)
+    print_banner(s.console, len(s.sites))
+    print_commands(s.console, len(s.sites))
 
 
 def cmd_exit(s: Session, args: list[str]) -> None:
