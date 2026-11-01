@@ -7,7 +7,7 @@ import getpass
 import json
 import sys
 
-from . import (__version__, domainscan, emailscan, github, history, historycmd, image, net, password,
+from . import (__version__, domainscan, emailscan, github, history, historycmd, image, me, net, password,
                phone, report, repl, runner, username)
 from .banner import print_banner
 from .sites import SiteListError, load_sites
@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="Use it only on yourself, in CTFs, or with authorization.",
     )
     parser.add_argument("--version", action="version", version=f"osint {__version__}")
-    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain,phone,image,github,password,history}")
+    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain,phone,image,github,password,me,history}")
 
     p = sub.add_parser("username", parents=[common], help="search a username on 500 sites")
     p.add_argument("target", metavar="NAME")
@@ -68,6 +68,16 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("github", parents=[common],
                        help="deep GitHub profile: repos, languages, activity, emails in commits")
     p.add_argument("target", metavar="USERNAME")
+
+    p = sub.add_parser("me", parents=[common],
+                       help="privacy self-audit: username, email, phone -> exposure summary and 0-100 score")
+    p.add_argument("--username", metavar="NAME")
+    p.add_argument("--email", metavar="ADDRESS")
+    p.add_argument("--phone", metavar="NUMBER")
+    p.add_argument("--region", default=phone.DEFAULT_REGION, metavar="XX",
+                   help=f"country code for a phone number without '+' (default {phone.DEFAULT_REGION})")
+    p.add_argument("--check-password", action="store_true",
+                   help="also check one of your passwords (hidden prompt, or first stdin line when piped)")
 
     p = sub.add_parser("history", parents=[common],
                        help="list stored scans, show one, diff two, or clear (history [list|show ID|diff ID ID|clear])")
@@ -174,6 +184,35 @@ def one_shot(args: argparse.Namespace) -> int:
             return 2
         if not args.no_banner and not quiet:
             print_banner(console, len(load_sites()))
+        show = "found"
+    elif args.command == "me":
+        if not (args.username or args.email or args.phone):
+            error(errors, "give at least one of --username, --email, --phone")
+            return 2
+        if args.username and not username.username_valid(args.username):
+            error(errors, "invalid username (allowed: letters, digits, '.', '_', '-', max 40 chars)")
+            return 2
+        if args.email and not emailscan.email_valid(args.email):
+            error(errors, "invalid email address")
+            return 2
+        if args.phone and not phone.region_valid(args.region):
+            error(errors, f"unknown region '{args.region}' (use a 2-letter country code such as TR, US, DE)")
+            return 2
+        pw = None
+        if args.check_password:
+            args.stdin = not sys.stdin.isatty()
+            args.target = None
+            pw = read_password(args, errors)
+            if pw is None:
+                return 2
+        sites = load_sites()
+        if not args.no_banner and not quiet:
+            print_banner(console, len(sites))
+        try:
+            result = me.run(username=args.username or "", email=args.email or "", phone=args.phone or "",
+                            region=args.region, pw=pw, sites=sites, console=console, progress=not quiet)
+        finally:
+            pw = None
         show = "found"
     elif args.command == "github":
         try:
