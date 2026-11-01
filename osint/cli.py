@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
 import sys
 
-from . import __version__, domainscan, emailscan, image, net, phone, report, repl, runner, username
+from . import __version__, domainscan, emailscan, image, net, password, phone, report, repl, runner, username
 from .banner import print_banner
 from .sites import SiteListError, load_sites
 from .ui import error, info, make_console, render_chain_summary, render_result
@@ -32,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="Use it only on yourself, in CTFs, or with authorization.",
     )
     parser.add_argument("--version", action="version", version=f"osint {__version__}")
-    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain,phone,image}")
+    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain,phone,image,password}")
 
     p = sub.add_parser("username", parents=[common], help="search a username on 500 sites")
     p.add_argument("target", metavar="NAME")
@@ -58,6 +59,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("image", parents=[common], help="EXIF metadata and GPS of a local image")
     p.add_argument("target", metavar="PATH")
+
+    p = sub.add_parser("password", parents=[common],
+                       help="check a password against Pwned Passwords (k-anonymity; never stored)")
+    p.add_argument("target", nargs="?", metavar="PASSWORD",
+                   help="avoid: it ends up in your shell history; use --stdin or the hidden prompt")
+    p.add_argument("--stdin", action="store_true", help="read the password from the first line of stdin")
     return parser
 
 
@@ -82,6 +89,28 @@ def setup_network(args: argparse.Namespace, errors) -> int | None:
     elif net.get_proxy():
         info(errors, f"using proxy {net.describe()}")
     return None
+
+
+def read_password(args: argparse.Namespace, errors) -> str | None:
+    """Password from stdin, the hidden prompt, or (discouraged) argv. None on failure."""
+    if args.stdin:
+        pw = sys.stdin.readline().rstrip("\r\n")
+    elif args.target:
+        error(errors, "warning: a password in the command line is stored in your shell history "
+                      "and visible to other users; prefer 'echo ... | osint password --stdin'")
+        pw = args.target
+    elif sys.stdin.isatty():
+        try:
+            pw = getpass.getpass("Password (hidden): ")
+        except (EOFError, KeyboardInterrupt):
+            return None
+    else:
+        error(errors, "no password given: use --stdin (e.g. echo pw | osint password --stdin)")
+        return None
+    if not pw:
+        error(errors, "empty password")
+        return None
+    return pw
 
 
 def one_shot(args: argparse.Namespace) -> int:
@@ -123,6 +152,23 @@ def one_shot(args: argparse.Namespace) -> int:
         except phone.PhoneError as e:
             error(errors, str(e))
             return 2
+        if not args.no_banner and not quiet:
+            print_banner(console, len(load_sites()))
+        show = "found"
+    elif args.command == "password":
+        if args.save is not None:
+            error(errors, "password checks are never saved")
+            return 2
+        pw = read_password(args, errors)
+        if pw is None:
+            return 2
+        try:
+            result = password.analyze(pw)
+        except password.PasswordError as e:
+            error(errors, str(e))
+            return 1
+        finally:
+            pw = None
         if not args.no_banner and not quiet:
             print_banner(console, len(load_sites()))
         show = "found"
