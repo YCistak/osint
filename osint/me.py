@@ -18,13 +18,13 @@ FORMULA = [
     ("Data breaches", "4 points per breach, max 28"),
     ("Passwords exposed in a breach", "8 points if any breach leaked passwords"),
     ("Recent breach (last 2 years)", "4 points"),
-    ("Sensitive profile fields", "3 points per exposed field (location, company, public email, real name), max 12"),
+    ("Sensitive profile fields", "3 points per exposed field (location, company, public email), max 12"),
     ("Email linked to a public profile", "5 points (Gravatar or GitHub profile found for the address)"),
     ("Phone number in recovery hints", "5 points if a service reveals a (masked) phone number"),
     ("Real email in public git commits", "6 points"),
     ("Your password found in breaches", "10 points"),
 ]
-SENSITIVE_FIELDS = ("Location", "Company", "Email", "Name")
+SENSITIVE_FIELDS = ("Location", "Company", "Email")
 RECENT_YEARS = 2
 BANDS = ((80, "good"), (50, "fair"), (0, "poor"))
 
@@ -111,10 +111,17 @@ def recommendations(f: Facts, now: datetime | None = None) -> list[str]:
         recs.append("Your real email address is visible in public git commits: enable 'Keep my email addresses "
                     "private' and 'Block command line pushes that expose my email' in GitHub settings, then use "
                     "your noreply address in git (git config user.email).")
+    by_field: dict[str, list[str]] = {}
     for site, fields in sorted(f.exposed_fields.items(), key=lambda kv: kv[0].lower()):
         for fld in fields:
-            what = {"Email": "public email", "Name": "real name"}.get(fld, fld.lower())
-            recs.append(f"Remove {what} from your {site} profile.")
+            by_field.setdefault(fld, []).append(site)
+    for fld, sites in by_field.items():
+        what = {"Email": "public email"}.get(fld, fld.lower())
+        if len(sites) == 1:
+            recs.append(f"Remove {what} from your {sites[0]} profile.")
+        else:
+            more = f" and {len(sites) - 6} more" if len(sites) > 6 else ""
+            recs.append(f"Remove {what} from your profiles on: {', '.join(sites[:6])}{more}.")
     if f.phone_hints:
         recs.append(f"Services reveal a hint of your phone number ({', '.join(f.phone_hints[:3])}): remove it from "
                     "account recovery and use an authenticator app instead.")
@@ -150,8 +157,6 @@ def exposed_profile_fields(result) -> dict[str, list[str]]:
             val = h.profile.get(fld, "")
             if not val:
                 continue
-            if fld == "Name" and (" " not in val.strip() or val.strip().lower() == result.target.lower()):
-                continue  # a bare handle is not a real name
             got.append(fld)
         if got:
             out[h.name] = got

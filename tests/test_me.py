@@ -48,7 +48,7 @@ def test_each_factor_points_and_caps():
 
 
 def test_profile_phone_git_password_factors():
-    f = me.Facts(username="x", exposed_fields={"GitHub": ["Location", "Company"], "Reddit": ["Name"]})
+    f = me.Facts(username="x", exposed_fields={"GitHub": ["Location", "Company"], "Reddit": ["Email"]})
     assert me.compute_score(f, NOW)[0] == 100 - 9
     f = me.Facts(username="x", exposed_fields={"A": ["Location"] * 6})
     assert me.compute_score(f, NOW)[0] == 88  # cap 12
@@ -92,6 +92,13 @@ def test_recommendations_are_concrete():
     assert "Phone numbers were leaked" in text_ and "Amazon" in text_
     assert "Enable two-factor authentication (2FA)" in text_ and "password manager" in text_
     assert len(recs) == len(set(recs))
+
+
+def test_recommendations_group_many_sites_per_field():
+    f = me.Facts(username="x", exposed_fields={f"Site{i}": ["Location"] for i in range(9)})
+    recs = me.recommendations(f, NOW)
+    loc = [r for r in recs if r.startswith("Remove location")]
+    assert len(loc) == 1 and "Site0, Site1" in loc[0] and "and 3 more" in loc[0]
 
 
 def test_recommendations_minimal_still_has_basics():
@@ -140,8 +147,8 @@ def test_facts_from_results():
     me.facts_from_username(user, f)
     me.facts_from_email(mail, f)
     assert f.username_accounts == ["GitHub", "Reddit"]
-    assert f.exposed_fields["GitHub"] == ["Location", "Company", "Name"]
-    assert "Reddit" not in f.exposed_fields  # a bare handle is not a real name
+    assert f.exposed_fields["GitHub"] == ["Location", "Company"]
+    assert "Reddit" not in f.exposed_fields  # only location, company and public email count
     assert f.exposed_fields["Gravatar"] == ["Location"]
     assert f.email_accounts == ["Amazon", "Spotify"] and f.phone_hints == ["Amazon"]
     assert [b["name"] for b in f.breaches] == ["Adobe", "Dubsmash"]
@@ -161,7 +168,7 @@ def test_build_result_layout_and_meta():
     summary = res.sections["Summary"]["items"]
     assert summary["Breaches"] == "2; newest: Dubsmash (2018)"
     assert "Passwords" in summary["Exposed data classes"]
-    assert "GitHub: Location, Company, Name" in summary["Exposed profile fields"]
+    assert "GitHub: Location, Company" in summary["Exposed profile fields"]
     assert "revealed by: Amazon" in summary["Phone"] and "Turkey" in summary["Phone"]
     assert summary["Password check"] == "not found in known breaches"
     score = res.meta["score"]
