@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from rich.console import Console
+from rich.table import Table
 from rich.text import Text
 
 from . import domainscan, emailscan, report, runner, username
@@ -20,20 +21,43 @@ from .ui import error, info, render_result
 COMMANDS = ["username", "email", "domain", "save", "show", "help", "clear", "exit", "quit"]
 PROMPT = "osint ❯ "
 
-HELP = """\
-Commands:
-  username <name>          search a username on {sites} sites
-  email <address>          breaches, registered accounts, profiles, mail server
-                           flags: --unsafe (include password-reset checks),
-                                  --all-modules (include known-dead checks)
-  domain <domain|ip>       whois, DNS, subdomains (domain) or reverse DNS, geolocation (IP)
-  save [path]              save the last result as Markdown (default: ./reports/)
-  show all|found           re-display the last result (all = include not found / unknown)
-  clear                    clear the screen
-  help                     this text
-  exit | quit | Ctrl-D     leave
+# (usage, description, extra detail lines) -- single source for `help` and the start screen.
+COMMAND_ROWS = [
+    ("username <name>", "search a username on {sites} sites", []),
+    ("email <address>", "breaches, accounts, profiles, mail server",
+     ["flags: --unsafe (include password-reset checks),",
+      "       --all-modules (include known-dead checks)"]),
+    ("domain <domain|ip>", "whois, DNS, subdomains, geolocation", []),
+    ("save [path]", "save last result as Markdown (default: ./reports/)", []),
+    ("show all|found", "toggle unknown/not-found rows", []),
+    ("clear", "clear screen (and re-show banner + commands)", []),
+    ("help", "this text", []),
+    ("exit | quit | Ctrl-D", "leave", []),
+]
 
-Ctrl-C during a scan cancels the scan, not the program."""
+
+def help_text(site_count: int) -> str:
+    lines = ["Commands:"]
+    for usage, desc, extra in COMMAND_ROWS:
+        lines.append(f"  {usage:<24} {desc.format(sites=site_count)}")
+        lines.extend(f"  {'':<24} {e}" for e in extra)
+    lines += ["", "Ctrl-C during a scan cancels the scan, not the program."]
+    return "\n".join(lines)
+
+
+def print_commands(console: Console, site_count: int) -> None:
+    """Compact borderless command list shown under the banner."""
+    table = Table.grid(padding=(0, 3))
+    table.add_column(style="bold cyan", no_wrap=True)
+    table.add_column(style="dim")
+    for usage, desc, _ in COMMAND_ROWS:
+        if usage == "help":
+            usage, desc = "help / exit", ""
+        elif usage.startswith("exit"):
+            continue
+        table.add_row(Text("  " + usage), Text(desc.format(sites=site_count)))
+    console.print(table)
+    console.print()
 
 
 def history_path() -> Path:
@@ -134,7 +158,7 @@ def cmd_show(s: Session, args: list[str]) -> None:
 
 
 def cmd_help(s: Session, args: list[str]) -> None:
-    s.console.print(HELP.format(sites=len(s.sites)), markup=False)
+    s.console.print(help_text(len(s.sites)), markup=False)
 
 
 def cmd_clear(s: Session, args: list[str]) -> None:
@@ -211,6 +235,7 @@ def run(console: Console, sites: list[Site], *, banner: bool = True) -> int:
     if banner:
         clear_screen(console)
         print_banner(console, len(sites))
+        print_commands(console, len(sites))
     session = Session(console, sites)
     interactive = sys.stdin.isatty() and sys.stdout.isatty()
     prompt_session = _make_prompt_session() if interactive else None
