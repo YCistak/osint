@@ -28,7 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"osint {__version__}")
     sub = parser.add_subparsers(dest="command", metavar="{username,email,domain}")
 
-    p = sub.add_parser("username", parents=[common], help="search a username on 500+ sites")
+    p = sub.add_parser("username", parents=[common], help="search a username on 500 sites")
     p.add_argument("target", metavar="NAME")
     p.add_argument("--show-all", action="store_true", help="also list not-found and unknown sites")
     p.add_argument("--concurrency", type=int, default=username.DEFAULT_CONCURRENCY)
