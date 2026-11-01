@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from . import categories, domainscan, emailscan, image, phone, report, runner, username
+from . import categories, domainscan, emailscan, image, net, phone, report, runner, username
 from .banner import clear_screen, print_banner, print_compact_banner
 from .categories import Category
 from .models import ScanResult
@@ -22,13 +22,14 @@ from .ui import error, info, render_chain_summary, render_result
 
 PROMPT_BASE = "osint"
 # commands available everywhere (besides the category commands)
-GLOBAL_COMMANDS = ["save", "show", "help", "clear", "exit", "quit"]
+GLOBAL_COMMANDS = ["save", "show", "proxy", "help", "clear", "exit", "quit"]
 BACK_WORDS = ("back", "0", "..")
 
 # (usage, description, extra detail lines) -- rows of `help` that are not categories.
 COMMAND_ROWS = [
     ("save [path] [--html]", "save last result (Markdown; .html or --html for a web page)", []),
     ("show all|found", "toggle unknown/not-found rows", []),
+    ("proxy <url>|tor|off", "route traffic through a proxy / Tor; no argument shows the state", []),
     ("clear", "clear screen and redraw the current menu", []),
     ("help", "this text", []),
     ("exit | quit | Ctrl-D", "leave", []),
@@ -299,6 +300,35 @@ def cmd_show(s: Session, args: list[str]) -> None:
     render_result(s.console, s.last, show=args[0])
 
 
+def cmd_proxy(s: Session, args: list[str]) -> None:
+    if not args:
+        info(s.console, f"proxy: {net.describe() or 'off'}")
+        return
+    if len(args) != 1:
+        error(s.console, "usage: proxy <url>|tor|off   (e.g. proxy socks5h://127.0.0.1:9050)")
+        return
+    word = args[0].lower()
+    try:
+        if word in ("off", "none"):
+            net.set_proxy(None)
+            info(s.console, "proxy off (direct connections)")
+            return
+        net.set_proxy(net.TOR_PROXY if word == "tor" else args[0])
+    except net.ProxyError as e:
+        error(s.console, str(e))
+        return
+    if word == "tor":
+        is_tor, message = net.check_tor()
+        if not is_tor:
+            net.set_proxy(None)
+            error(s.console, message + " Proxy left off.")
+            return
+        info(s.console, message)
+    else:
+        info(s.console, f"proxy set: {net.describe()}")
+    info(s.console, net.bypass_warning())
+
+
 def cmd_help(s: Session, args: list[str]) -> None:
     s.console.print(help_text(len(s.sites)), markup=False)
 
@@ -327,6 +357,7 @@ def enter_category(s: Session, cat: Category) -> None:
 SHARED_HANDLERS = {
     "save": cmd_save,
     "show": cmd_show,
+    "proxy": cmd_proxy,
     "help": cmd_help,
     "?": cmd_help,
     "clear": cmd_clear,
