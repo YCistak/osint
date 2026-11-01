@@ -60,7 +60,7 @@ def test_help_mentions_every_command_and_site_count():
     s, buf = make_session()
     repl.execute(s, "help")
     out = buf.getvalue()
-    for word in ["username <name>", "email <address>", "domain <domain|ip>", "phone <number>", "image <path>",
+    for word in ["username <name>", "email <address>", "domain <domain|ip>", "phone <number>", "image <path|url>",
                  "save [path] [--html]", "show all|found", "clear", "exit", "Ctrl-C"]:
         assert word in out
     assert "1 sites" in out
@@ -199,7 +199,7 @@ def test_command_list_shown_under_banner_and_in_help_share_rows():
     repl.print_menu(Console(file=buf, force_terminal=False, width=100), 500)
     out = buf.getvalue()
     for word in ["[1]", "Username", "search a username on 500 sites", "[2]", "Email",
-                 "[3]", "Domain/IP", "[4]", "Phone", "[5]", "Image", "EXIF metadata & GPS", "[0]", "Exit"]:
+                 "[3]", "Domain/IP", "[4]", "Phone", "[5]", "Image", "EXIF, GPS, reverse image search", "[0]", "Exit"]:
         assert word in out
     assert "│" not in out and "─" not in out  # borderless
 
