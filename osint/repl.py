@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.text import Text
 
 from . import domainscan, emailscan, report, runner, username
-from .banner import print_banner
+from .banner import clear_screen, print_banner
 from .models import ScanResult
 from .sites import Site
 from .ui import error, info, render_result
@@ -209,6 +209,7 @@ def _make_prompt_session():
 def run(console: Console, sites: list[Site], *, banner: bool = True) -> int:
     """Start the interactive loop. Returns the process exit code."""
     if banner:
+        clear_screen(console)
         print_banner(console, len(sites))
     session = Session(console, sites)
     interactive = sys.stdin.isatty() and sys.stdout.isatty()

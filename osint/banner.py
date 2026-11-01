@@ -59,3 +59,13 @@ def print_banner(console: Console, site_count: int) -> None:
     console.print(logo_text(), end="")
     console.print(subtitle(site_count))
     console.print()
+
+
+CLEAR_SEQUENCE = "\033[H\033[2J\033[3J"  # home, erase screen, erase scrollback
+
+
+def clear_screen(console: Console) -> None:
+    """Wipe screen and scrollback so the next output starts at the very top (TTY only)."""
+    if console.is_terminal:
+        console.file.write(CLEAR_SEQUENCE)
+        console.file.flush()
