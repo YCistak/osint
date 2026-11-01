@@ -7,6 +7,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
+from .html_report import to_html
 from .models import FOUND, MISSING, UNKNOWN, ScanResult
 
 DEFAULT_DIR = Path("reports")
@@ -109,30 +110,41 @@ def to_markdown(result: ScanResult, now: datetime | None = None) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def resolve_format(path: Path | str | None, fmt: str | None) -> str:
+    """"html" or "md": explicit ``fmt`` wins, then the file extension, then Markdown."""
+    if fmt in ("html", "md"):
+        return fmt
+    suffix = Path(path).suffix.lower() if path else ""
+    return "html" if suffix in (".html", ".htm") else "md"
+
+
 def save_report(
     result: ScanResult,
     path: Path | str | None = None,
     now: datetime | None = None,
+    fmt: str | None = None,
 ) -> Path:
-    """Write the report as Markdown and return its path.
+    """Write the report (Markdown by default, HTML for ``.html`` or ``fmt="html"``).
 
-    ``path`` may be a file (``.md``) or a directory; with none, ``./reports/`` is used.
+    ``path`` may be a file or a directory; with none, ``./reports/`` is used.
     An existing file is never overwritten: a time suffix and then a counter are added.
     """
     now = now or datetime.now()
-    content = to_markdown(result, now)
-    target = Path(path) if path else reports_dir()
-    if target.suffix.lower() == ".md":
+    fmt = resolve_format(path, fmt)
+    ext = ".html" if fmt == "html" else ".md"
+    content = to_html(result, now) if fmt == "html" else to_markdown(result, now)
+    target = Path(path).expanduser() if path else reports_dir()
+    if target.suffix.lower() in (".md", ".html", ".htm"):
         folder, stem = target.parent, target.stem
     else:
         folder, stem = target, f"{result.kind}-{safe_name(result.target)}-{now:%Y-%m-%d}"
     folder.mkdir(parents=True, exist_ok=True)
-    out = folder / f"{stem}.md"
+    out = folder / f"{stem}{ext}"
     if out.exists():
-        out = folder / f"{stem}-{now:%H%M%S}.md"
+        out = folder / f"{stem}-{now:%H%M%S}{ext}"
     n = 2
     while out.exists():
-        out = folder / f"{stem}-{now:%H%M%S}-{n}.md"
+        out = folder / f"{stem}-{now:%H%M%S}-{n}{ext}"
         n += 1
     out.write_text(content, encoding="utf-8")
     return out
