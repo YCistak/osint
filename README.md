@@ -125,7 +125,16 @@ osint domain example.com
 osint domain 1.1.1.1
 osint phone "0555 111 22 33"            # region TR by default
 osint phone 650-253-0000 --region US
-osint image ~/Pictures/photo.jpg        # EXIF + GPS
+osint image ~/Pictures/photo.jpg        # EXIF + GPS + upload pages for reverse search
+osint image https://example.com/a.jpg   # EXIF + ready-made Lens / Yandex / Bing / TinEye links
+osint github torvalds                   # deep GitHub scan (GITHUB_TOKEN raises the rate limit)
+osint me --username jane --email jane@example.com --phone +905551112233
+osint me --username jane --check-password   # hidden prompt (or first stdin line when piped)
+echo 'my password' | osint password --stdin # never pass the password as an argument
+osint username jane --variations        # also try likely variants
+osint history                           # list; also: history show 3 | history diff 3 5 | history clear [--yes]
+osint --tor username jane               # everything through Tor (checks IsTor first)
+osint --proxy socks5h://127.0.0.1:1080 domain example.com
 osint email jane@example.com --chain    # also search the usernames found in the email results
 osint domain example.com --json         # machine-readable, no banner or progress
 osint username torvalds --save          # also write ./reports/username-torvalds-<date>.md
@@ -133,7 +142,7 @@ osint username torvalds --save out.html # HTML report (or: --save --html)
 osint --no-banner                       # shell without the banner
 ```
 
-Exit codes: `0` ok, `2` invalid input, `130` scan cancelled.
+Exit codes: `0` ok, `1` service problem, `2` invalid input, `130` scan cancelled.
 
 ### Email output
 
