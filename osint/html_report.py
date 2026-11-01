@@ -33,7 +33,7 @@ th{color:var(--dim);font-weight:600}dl{display:grid;grid-template-columns:max-co
 dt{color:var(--dim)}dd{margin:0;overflow-wrap:anywhere}.hit{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .hit:last-child{border:0}.hit img{width:48px;height:48px;border-radius:50%;object-fit:cover;background:var(--line);flex:none}
 .hit h3{margin:0;font-size:1rem}.hit dl{margin-top:4px;font-size:.9rem}.ok{color:var(--ok)}.warn{color:var(--warn)}
-.stats{color:var(--dim);margin:0 0 12px}ul{margin:0;padding-left:20px}code{background:var(--bg);padding:1px 5px;border-radius:4px}
+.stats{color:var(--dim);margin:0 0 12px}ul,ol{margin:0;padding-left:22px}li{margin:4px 0}code{background:var(--bg);padding:1px 5px;border-radius:4px}
 """
 
 
@@ -85,6 +85,8 @@ def _body(body: dict) -> str:
         return "".join(parts)
     if kind == "list":
         return "<ul>" + "".join(f"<li><code>{esc(i)}</code></li>" for i in body["items"]) + "</ul>" if body["items"] else "<p>None.</p>"
+    if kind == "steps":
+        return "<ol>" + "".join(f"<li>{esc(i)}</li>" for i in body["items"]) + "</ol>" if body["items"] else "<p>None.</p>"
     return f"<p>{esc(body.get('text', ''))}</p>"
 
 

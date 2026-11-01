@@ -63,6 +63,8 @@ def _section_md(body: dict) -> list[str]:
         return lines
     if kind == "list":
         return [f"- `{i}`" for i in body["items"]] or ["None."]
+    if kind == "steps":
+        return [f"{n}. {i}" for n, i in enumerate(body["items"], 1)] or ["None."]
     return [body.get("text", "")]
 
 
