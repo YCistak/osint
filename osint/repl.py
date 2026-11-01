@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from . import categories, domainscan, emailscan, image, net, password, phone, report, runner, username
+from . import categories, domainscan, emailscan, github, image, net, password, phone, report, runner, username
 from .banner import clear_screen, print_banner, print_compact_banner
 from .categories import Category
 from .models import ScanResult
@@ -252,6 +252,22 @@ def cmd_domain(s: Session, args: list[str]) -> None:
     render_result(s.console, result)
 
 
+def cmd_github(s: Session, args: list[str]) -> None:
+    args, _ = split_flags(args)
+    if len(args) != 1 or not username.username_valid(args[0]):
+        error(s.console, "usage: github <username>   (e.g. github torvalds)")
+        return
+    info(s.console, f"reading the public GitHub profile of [bold]{args[0]}[/]"
+                    + ("" if github.token() else " (no GITHUB_TOKEN: 60 API calls per hour)"))
+    try:
+        result = github.analyze(args[0])
+    except github.GitHubError as e:
+        error(s.console, str(e))
+        return
+    s.last = result
+    render_result(s.console, result)
+
+
 def parse_region(args: list[str]) -> tuple[list[str], str | None, str]:
     """Pull ``--region XX`` / ``--region=XX`` out of ``args``. Returns (rest, region, error)."""
     rest: list[str] = []
@@ -452,6 +468,9 @@ categories.register(Category(
 categories.register(Category(
     key="image", label="Image", summary="EXIF, GPS, reverse image search",
     target="<path|url>", example="~/Pictures/photo.jpg", run=cmd_image, path_target=True))
+categories.register(Category(
+    key="github", label="GitHub", summary="profile, repos, activity, emails in commits",
+    target="<username>", example="torvalds", run=cmd_github))
 categories.register(Category(
     key="password", label="Password", summary="check a password against known breaches",
     target="(hidden prompt)", example="type it, nothing is echoed or saved", run=cmd_password,
