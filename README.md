@@ -1,6 +1,6 @@
 # osint
 
-Terminal OSINT toolkit: username search across **500 sites**, email recon and domain/IP recon, in an interactive shell or as one-shot commands.
+Terminal OSINT toolkit: username search across **500 sites**, email, domain/IP, GitHub and phone recon, a privacy self-audit with a 0-100 score, and a private password check, in an interactive shell or as one-shot commands.
 
 ![osint banner and a sample scan](docs/screenshot.svg)
 
@@ -8,12 +8,20 @@ Terminal OSINT toolkit: username search across **500 sites**, email recon and do
 
 ## Features
 
-- **Category menu**: start `osint`, pick a number (Username, Email, Domain/IP, Phone, Image), type just the target. Power users can still type `username torvalds` from the main prompt.
+- **Category menu**: start `osint`, pick a number (Username, Email, Domain/IP, Phone, Image, GitHub, Me, Password), type just the target. Power users can still type `username torvalds` from the main prompt.
 - **Username search** on 500 sites. The site list is derived from [maigret](https://github.com/soxoj/maigret)'s database and pruned against the live internet: every shipped site was checked with random nonsense usernames and none reports a false "found".
 - **Profile details** under each found account: name, bio, location, company, website, avatar. Site-specific parsers for GitHub, GitLab, Bluesky, Keybase, Reddit, Hacker News and DEV, plus an `og:` meta-tag fallback that reuses the page already downloaded.
 - **Email recon** with free sources and no API keys: XposedOrNot breaches, [holehe](https://github.com/megadose/holehe) account checks, Gravatar and GitHub profiles, MX and mail provider detection.
 - **Chained scans**: usernames found in email results (GitHub login, Gravatar username, email local part) can be searched right away (`Scan these usernames? [y/N]`, or `--chain` in one-shot mode) with a combined summary.
 - **Domain / IP recon**: whois, DNS records, subdomains from certificate transparency (crt.sh), reverse DNS and geolocation for IPs.
+- **Domain security** (domains): SPF and DMARC with a short assessment, common DKIM selectors, open ports / hostnames / known CVEs from Shodan InternetDB for the resolved A records, the TLS certificate (issuer, subject, SANs, validity, days left) and the Wayback Machine history (first and last snapshot). Each part is its own section and fails on its own.
+- **Me (privacy self-audit)**: give any of a username, an email address and a phone number; it runs the relevant scans and prints accounts found, breaches (count, newest, exposed data classes), exposed profile fields, phone exposure, a transparent **0-100 privacy score** with a points table and concrete recommendations. Optionally checks one of your passwords (hidden prompt). Included in reports and `--json`. See [Privacy score](#privacy-score).
+- **Password check**: [Have I Been Pwned Pwned Passwords](https://haveibeenpwned.com/API/v3#PwnedPasswords) range API with k-anonymity. See [Password privacy](#password-privacy).
+- **GitHub deep scan**: profile, repositories, top languages, stars, organizations, recent activity and the e-mail addresses exposed in public commits (real addresses are flagged, noreply ones are not). Uses the public API; set `GITHUB_TOKEN` for a higher rate limit.
+- **Username variations**: `--variations` (or `variations on`, or `<name> -v`) also searches up to 10 likely variants (separators, initials, `1`, `123`, the year); the list is shown first and found profiles are de-duplicated by URL.
+- **Reverse image search**: for an image URL it builds Google Lens, Yandex, Bing Visual Search and TinEye links and reads its EXIF (downloaded to a temp file, max 20 MB, content type checked, treated as data only). For a local file it prints the upload pages; the file is never uploaded by osint.
+- **History**: scan summaries (never passwords) in a local SQLite file; `history`, `history show`, `history diff`, `history clear`, and a "changes since the last scan" line after each scan. `--no-history` turns it off.
+- **Proxy / Tor**: `--proxy URL`, `--tor`, `OSINT_PROXY`, and `proxy <url>|tor|off` in the shell. See [Proxy and Tor](#proxy-and-tor).
 - **Phone analysis**, fully offline ([phonenumbers](https://github.com/daviddrysdale/python-phonenumbers)): validity, E.164 / international format, country, region, carrier, line type, timezones. Numbers without `+` use region `TR` unless `--region` says otherwise.
 - **Image metadata**: EXIF camera, date, software and GPS (decimal coordinates plus Google Maps / OpenStreetMap links) via Pillow, no exiftool needed.
 - **Reports**: Markdown (`save`) or a single self-contained dark HTML page (`save --html` or a `.html` path) with clickable links and avatars. All external data is HTML-escaped.
