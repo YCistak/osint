@@ -7,7 +7,8 @@ import getpass
 import json
 import sys
 
-from . import __version__, domainscan, emailscan, github, image, net, password, phone, report, repl, runner, username
+from . import (__version__, domainscan, emailscan, github, history, historycmd, image, net, password,
+               phone, report, repl, runner, username)
 from .banner import print_banner
 from .sites import SiteListError, load_sites
 from .ui import error, info, make_console, render_chain_summary, render_result
@@ -21,6 +22,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="also save a report: Markdown, or HTML for a .html path (default folder: ./reports/)")
     common.add_argument("--html", action="store_true", help="with --save: write a single-file HTML report")
 
+    common.add_argument("--no-history", action="store_true", default=argparse.SUPPRESS,
+                        help="do not record this scan in the local history")
     common.add_argument("--proxy", metavar="URL", default=argparse.SUPPRESS,
                         help="route HTTP traffic through a proxy (http, https, socks5, socks5h); env OSINT_PROXY")
     common.add_argument("--tor", action="store_true", default=argparse.SUPPRESS,
@@ -33,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="Use it only on yourself, in CTFs, or with authorization.",
     )
     parser.add_argument("--version", action="version", version=f"osint {__version__}")
-    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain,phone,image,github,password}")
+    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain,phone,image,github,password,history}")
 
     p = sub.add_parser("username", parents=[common], help="search a username on 500 sites")
     p.add_argument("target", metavar="NAME")
@@ -65,6 +68,11 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("github", parents=[common],
                        help="deep GitHub profile: repos, languages, activity, emails in commits")
     p.add_argument("target", metavar="USERNAME")
+
+    p = sub.add_parser("history", parents=[common],
+                       help="list stored scans, show one, diff two, or clear (history [list|show ID|diff ID ID|clear])")
+    p.add_argument("words", nargs="*", metavar="ACTION", help="list | show <id> | diff <id1> <id2> | clear")
+    p.add_argument("--yes", action="store_true", help="with clear: do not ask for confirmation")
 
     p = sub.add_parser("password", parents=[common],
                        help="check a password against Pwned Passwords (k-anonymity; never stored)")
@@ -126,6 +134,11 @@ def one_shot(args: argparse.Namespace) -> int:
     failed = setup_network(args, errors)
     if failed is not None:
         return failed
+    if getattr(args, "no_history", False):
+        history.enabled = False
+    if args.command == "history":
+        from .repl import ask_yes_no
+        return historycmd.handle(args.words, make_console(), ask_yes_no, assume_yes=args.yes)
 
     if args.command == "username":
         if not username.username_valid(args.target):
@@ -207,6 +220,7 @@ def one_shot(args: argparse.Namespace) -> int:
         result = runner.run_domain(target, console, progress=not quiet)
         show = "found"
 
+    history.after_scan(result)  # adds a "changes since last scan" note when there is a previous scan
     if args.json:
         if getattr(args, "chain", False) and result.usernames and not result.cancelled:
             runner.run_chain(result, load_sites(), console, progress=False)
