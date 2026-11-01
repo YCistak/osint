@@ -275,6 +275,17 @@ def test_state_builds_grouped_sections_in_order():
     assert res.sections["Mail server"]["items"]["Provider"] == "Google Workspace / Gmail"
 
 
+def test_state_breach_table_sorted_newest_first_with_display_limit():
+    st = es.EmailState("x@example.com")
+    st.breaches = ["Old", "New", "Nodate"]
+    st.analytics = {"details": [
+        {"breach": "Old", "date": "2012", "records": 1000, "data": "", "domain": ""},
+        {"breach": "New", "date": "2025", "records": 5, "data": "", "domain": ""}]}
+    body = st.to_result().sections["Breaches"]
+    assert [r[0] for r in body["rows"]] == ["New", "Old", "Nodate"]
+    assert body["rows"][1][2] == "1,000" and body["display_limit"] == 15
+
+
 def test_state_adds_username_tip():
     res = full_state().to_result()
     assert any("username jane" in n for n in res.notes)

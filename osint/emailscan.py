@@ -292,9 +292,12 @@ class EmailState:
             rows = []
             for name in self.breaches:
                 d = details.get(name, {})
-                rows.append([name, d.get("date", ""), str(d.get("records", "") or ""), d.get("data", "")])
+                records = d.get("records") or 0
+                rows.append([name, d.get("date", ""), f"{records:,}" if records else "", d.get("data", "")])
+            rows.sort(key=lambda r: r[1], reverse=True)  # newest first, unknown years last
             body = table(["Breach", "Year", "Records", "Exposed data"], rows)
             body["summary"] = info
+            body["display_limit"] = 15  # terminal shows the newest; reports/JSON keep all
             res.sections["Breaches"] = body
 
         # Registered accounts

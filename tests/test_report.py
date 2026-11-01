@@ -91,3 +91,12 @@ def test_hostile_target_cannot_escape_folder(tmp_path):
     r = ScanResult("domain", "../../evil")
     p = report.save_report(r, tmp_path, NOW)
     assert p.parent == tmp_path
+
+
+def test_report_keeps_all_rows_even_when_terminal_limit_is_set():
+    r = ScanResult("email", "a@b.com")
+    body = table(["Breach"], [[f"B{i}"] for i in range(40)])
+    body["display_limit"] = 15
+    r.sections["Breaches"] = body
+    md = report.to_markdown(r, NOW)
+    assert "| B39 |" in md

@@ -103,12 +103,16 @@ def render_section(console: Console, title: str, body: dict) -> None:
         for k, v in body.get("summary", {}).items():
             console.print(Text("    "), Text(f"{k}: ", style="dim"), Text(v), sep="")
         if body["rows"]:
+            limit = body.get("display_limit") or len(body["rows"])
             table = Table(show_header=True, header_style="bold", box=None, pad_edge=False, padding=(0, 2))
             for h in body["headers"]:
                 table.add_column(h, overflow="fold")
-            for row in body["rows"]:
+            for row in body["rows"][:limit]:
                 table.add_row(*row)
             console.print(table)
+            if len(body["rows"]) > limit:
+                console.print(Text(f"    ... showing {limit} of {len(body['rows'])}; "
+                                   "'save' writes the full list to the report", style="dim"))
         if body.get("footer"):
             console.print(Text("    " + body["footer"], style="dim"))
     elif kind == "list":
