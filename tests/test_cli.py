@@ -125,7 +125,7 @@ def test_help_and_version_via_subprocess():
     h = run_cli("--help")
     assert h.returncode == 0 and "username" in h.stdout and "--no-banner" in h.stdout and "--json" in h.stdout
     v = run_cli("--version")
-    assert v.stdout.strip() == "osint 0.2.0"
+    assert v.stdout.strip() == "osint 0.3.0"
 
 
 def test_repl_via_piped_stdin():
@@ -171,6 +171,6 @@ def test_pty_start_clears_and_lists_commands_but_one_shot_does_not():
     out = pty_start_output()
     assert out.startswith("\x1b[H\x1b[2J\x1b[3J")
     plain = re.sub(r"\x1b\[[0-9;?]*[A-Za-z]", "", out)
-    assert "██████╗" in plain and "username <name>" in plain and "domain <domain|ip>" in plain
+    assert "██████╗" in plain and "[1]" in plain and "Username" in plain and "[3]" in plain and "Domain/IP" in plain
     one = run_cli("--help")  # one-shot paths never reach repl.run; no network needed
-    assert "\x1b[3J" not in one.stdout and "username <name>" not in one.stdout
+    assert "\x1b[3J" not in one.stdout and "[1]" not in one.stdout

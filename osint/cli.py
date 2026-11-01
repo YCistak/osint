@@ -6,7 +6,7 @@ import argparse
 import json
 import sys
 
-from . import __version__, domainscan, emailscan, report, repl, runner, username
+from . import __version__, domainscan, emailscan, image, phone, report, repl, runner, username
 from .banner import print_banner
 from .sites import SiteListError, load_sites
 from .ui import error, info, make_console, render_chain_summary, render_result
@@ -17,7 +17,8 @@ def build_parser() -> argparse.ArgumentParser:
     common.add_argument("--no-banner", action="store_true", help="do not print the banner")
     common.add_argument("--json", action="store_true", help="print the result as JSON (no banner, no progress)")
     common.add_argument("--save", nargs="?", const="", metavar="PATH",
-                        help="also save a Markdown report (default folder: ./reports/)")
+                        help="also save a report: Markdown, or HTML for a .html path (default folder: ./reports/)")
+    common.add_argument("--html", action="store_true", help="with --save: write a single-file HTML report")
 
     parser = argparse.ArgumentParser(
         prog="osint",
@@ -26,7 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="Use it only on yourself, in CTFs, or with authorization.",
     )
     parser.add_argument("--version", action="version", version=f"osint {__version__}")
-    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain}")
+    sub = parser.add_subparsers(dest="command", metavar="{username,email,domain,phone,image}")
 
     p = sub.add_parser("username", parents=[common], help="search a username on 500 sites")
     p.add_argument("target", metavar="NAME")
@@ -44,6 +45,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("domain", parents=[common], help="whois, DNS, subdomains / IP geolocation")
     p.add_argument("target", metavar="DOMAIN|IP")
+
+    p = sub.add_parser("phone", parents=[common], help="country, carrier, line type (offline)")
+    p.add_argument("target", metavar="NUMBER")
+    p.add_argument("--region", default=phone.DEFAULT_REGION, metavar="XX",
+                   help=f"country code for numbers without '+' (default {phone.DEFAULT_REGION})")
+
+    p = sub.add_parser("image", parents=[common], help="EXIF metadata and GPS of a local image")
+    p.add_argument("target", metavar="PATH")
     return parser
 
 
@@ -74,6 +83,27 @@ def one_shot(args: argparse.Namespace) -> int:
         result = runner.run_email(args.target, console, progress=not quiet,
                                   unsafe=args.unsafe, all_modules=args.all_modules)
         show = "found"
+    elif args.command == "phone":
+        try:
+            if not phone.region_valid(args.region):
+                error(errors, f"unknown region '{args.region}' (use a 2-letter country code such as TR, US, DE)")
+                return 2
+            result = phone.analyze(args.target, args.region.upper())
+        except phone.PhoneError as e:
+            error(errors, str(e))
+            return 2
+        if not args.no_banner and not quiet:
+            print_banner(console, len(load_sites()))
+        show = "found"
+    elif args.command == "image":
+        try:
+            result = image.analyze(args.target)
+        except image.ImageError as e:
+            error(errors, str(e))
+            return 2
+        if not args.no_banner and not quiet:
+            print_banner(console, len(load_sites()))
+        show = "found"
     else:
         target = domainscan.clean_target(args.target)
         if domainscan.target_kind(target) == "invalid":
@@ -98,7 +128,7 @@ def one_shot(args: argparse.Namespace) -> int:
                 render_chain_summary(console, results)
 
     if args.save is not None:
-        path = report.save_report(result, args.save or None)
+        path = report.save_report(result, args.save or None, fmt="html" if args.html else None)
         info(errors if args.json else console, f"report saved: {path}")
     return 130 if result.cancelled else 0
 

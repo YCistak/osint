@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "osint"
-version = "0.2.0"
+version = "0.3.0"
 description = "Terminal OSINT toolkit: username search across 500+ sites, email and domain recon"
 readme = "README.md"
 license = { text = "MIT" }
