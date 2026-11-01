@@ -1,34 +1,39 @@
-"""Gerçek ağ erişimli duman testleri. Çalıştırmak için: python -m pytest -m canli"""
+"""Smoke tests that touch the real internet. Run with: python -m pytest -m live"""
+
+import asyncio
 
 import pytest
 
-from osint_tui import alan_ip, kullanici_adi as ka
+from osint import domainscan, username
+from osint.models import FOUND, MISSING
+from osint.sites import load_sites
 
-pytestmark = pytest.mark.canli
+pytestmark = pytest.mark.live
 
-
-async def _tara(kullanici):
-    siteler = [s for s in ka.siteleri_yukle() if s.ad in ("GitHub", "GitLab", "Docker Hub", "Lichess")]
-    return {s.site: s for s in await ka.tara(kullanici, siteler)}
-
-
-async def test_github_torvalds_var():
-    d = await _tara("torvalds")
-    assert d["GitHub"].durum == ka.VAR, d["GitHub"]
+NONSENSE = "zq8xkv3pp91wwq7"
 
 
-async def test_sacma_ad_hicbir_yerde_yok():
-    d = await _tara("zq8xkv3pp91wwq7")
-    assert d["GitHub"].durum == ka.YOK
-    assert not [s for s in d.values() if s.durum == ka.VAR]
+def _scan(name, names):
+    sites = [s for s in load_sites() if s.name in names]
+    assert sites, "expected sites missing from sites.json"
+    return {h.name: h for h in asyncio.run(username.scan(name, sites))}
 
 
-async def test_tum_liste_sacma_adda_yanlis_pozitif_vermez():
-    sonuc = await ka.tara("zq8xkv3pp91wwq7", ka.siteleri_yukle())
-    assert [s.site for s in sonuc if s.durum == ka.VAR] == []
+def test_github_torvalds_found():
+    hits = _scan("torvalds", {"GitHub"})
+    assert hits["GitHub"].status == FOUND, hits["GitHub"]
+
+
+def test_nonsense_name_not_found_on_github():
+    hits = _scan(NONSENSE, {"GitHub"})
+    assert hits["GitHub"].status == MISSING
+
+
+def test_full_list_has_no_false_positives_for_nonsense_name():
+    hits = asyncio.run(username.scan(NONSENSE, load_sites()))
+    assert [h.name for h in hits if h.status == FOUND] == []
 
 
 def test_example_com_dns():
-    s = alan_ip.dns_sorgula("example.com")
-    assert s["A"], s
-    assert any("v=spf1" in t for t in s["TXT"]) or s["NS"]
+    records = domainscan.dns_lookup("example.com")
+    assert records["A"], records

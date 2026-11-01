@@ -1,113 +1,143 @@
-"""Alan adı / IP modülü: ayıklama, hedef türü, sahte ağ ve sahte DNS."""
+"""Domain / IP module: parsing, target kind, mocked network and mocked DNS."""
 
 import dns.resolver
 import httpx
 import pytest
 
-from osint_tui import alan_ip
+from osint import domainscan
+from osint.models import ScanResult
 
 
-def test_hedef_turu():
-    assert alan_ip.hedef_turu("1.1.1.1") == "ip"
-    assert alan_ip.hedef_turu("2606:4700:4700::1111") == "ip"
-    assert alan_ip.hedef_turu("example.com") == "alan"
-    assert alan_ip.hedef_turu("alt.alan.example.co.uk") == "alan"
-    assert alan_ip.hedef_turu("türkiye.gov.tr") == "alan"
-    for kotu in ["", "localhost", "a b.com", "-x.com", "http://x"]:
-        assert alan_ip.hedef_turu(kotu) == "gecersiz"
+def test_target_kind():
+    assert domainscan.target_kind("1.1.1.1") == "ip"
+    assert domainscan.target_kind("2606:4700:4700::1111") == "ip"
+    assert domainscan.target_kind("example.com") == "domain"
+    assert domainscan.target_kind("sub.domain.example.co.uk") == "domain"
+    assert domainscan.target_kind("türkiye.gov.tr") == "domain"
+    for bad in ["", "localhost", "a b.com", "-x.com", "http://x"]:
+        assert domainscan.target_kind(bad) == "invalid"
 
 
-def test_hedefi_temizle():
-    assert alan_ip.hedefi_temizle("  https://Example.COM/yol?x=1 ") == "example.com"
-    assert alan_ip.hedefi_temizle("example.com.") == "example.com"
-    assert alan_ip.hedefi_temizle("example.com:8080") == "example.com"
-    assert alan_ip.hedefi_temizle("1.1.1.1") == "1.1.1.1"
+def test_clean_target():
+    assert domainscan.clean_target("  https://Example.COM/path?x=1 ") == "example.com"
+    assert domainscan.clean_target("example.com.") == "example.com"
+    assert domainscan.clean_target("example.com:8080") == "example.com"
+    assert domainscan.clean_target("1.1.1.1") == "1.1.1.1"
 
 
-def test_crtsh_tekillestirme():
-    kayitlar = [
+def test_extract_subdomains_dedupes_and_filters():
+    records = [
         {"name_value": "example.com\nwww.example.com", "common_name": "example.com"},
         {"name_value": "*.example.com", "common_name": "*.example.com"},
         {"name_value": "WWW.example.com", "common_name": "www.example.com"},
-        {"name_value": "mail.example.com\nbaska.org", "common_name": "mail.example.com"},
-        {"name_value": "kullanici@example.com", "common_name": "x"},  # e-posta sertifikası
-        {"name_value": "evil-example.com", "common_name": "evil-example.com"},  # ek alan değil
-        "bozuk kayıt",
+        {"name_value": "mail.example.com\nother.org", "common_name": "mail.example.com"},
+        {"name_value": "user@example.com", "common_name": "x"},  # email certificate
+        {"name_value": "evil-example.com", "common_name": "evil-example.com"},  # not a subdomain
+        "garbage",
         {},
     ]
-    assert alan_ip.alt_alanlari_ayikla(kayitlar, "example.com") == [
+    assert domainscan.extract_subdomains(records, "example.com") == [
         "example.com", "mail.example.com", "www.example.com",
     ]
 
 
-def _istemci(isle) -> httpx.Client:
-    return httpx.Client(transport=httpx.MockTransport(isle))
+def _client(handler) -> httpx.Client:
+    return httpx.Client(transport=httpx.MockTransport(handler))
 
 
-def test_crtsh_sorgula_basarili():
-    def isle(istek):
-        assert "crt.sh" in istek.url.host and "output=json" in str(istek.url)
+def test_crtsh_success():
+    def handler(request):
+        assert "crt.sh" in request.url.host and "output=json" in str(request.url)
         return httpx.Response(200, json=[{"name_value": "a.example.com\nb.example.com"}])
 
-    assert alan_ip.crtsh_sorgula("example.com", _istemci(isle)) == ["a.example.com", "b.example.com"]
+    assert domainscan.crtsh_lookup("example.com", _client(handler)) == ["a.example.com", "b.example.com"]
 
 
-@pytest.mark.parametrize("yanit,parca", [
+@pytest.mark.parametrize("response,fragment", [
     (httpx.Response(502), "502"),
-    (httpx.Response(200, text="<html>json değil</html>"), "JSON"),
+    (httpx.Response(200, text="<html>not json</html>"), "JSON"),
 ])
-def test_crtsh_hatalari(yanit, parca):
-    with pytest.raises(RuntimeError, match=parca):
-        alan_ip.crtsh_sorgula("example.com", _istemci(lambda r: yanit))
+def test_crtsh_errors(response, fragment):
+    with pytest.raises(RuntimeError, match=fragment):
+        domainscan.crtsh_lookup("example.com", _client(lambda r: response))
 
 
-def test_crtsh_zaman_asimi_bir_kez_tekrar_dener():
-    sayac = {"n": 0}
+def test_crtsh_timeout_retries_once():
+    calls = {"n": 0}
 
-    def isle(istek):
-        sayac["n"] += 1
-        raise httpx.ReadTimeout("yavaş", request=istek)
+    def handler(request):
+        calls["n"] += 1
+        raise httpx.ReadTimeout("slow", request=request)
 
-    with pytest.raises(RuntimeError, match="zaman aşımı"):
-        alan_ip.crtsh_sorgula("example.com", _istemci(isle))
-    assert sayac["n"] == 2
+    with pytest.raises(RuntimeError, match="timed out"):
+        domainscan.crtsh_lookup("example.com", _client(handler))
+    assert calls["n"] == 2
 
 
-def test_ip_konum():
-    def isle(istek):
+def test_ip_location():
+    def handler(request):
         return httpx.Response(200, json={
-            "status": "success", "country": "Türkiye", "city": "Ankara", "lat": 39.9, "lon": 32.8,
+            "status": "success", "country": "Turkey", "city": "Ankara", "lat": 39.9, "lon": 32.8,
             "isp": "X", "query": "1.2.3.4"})
 
-    s = alan_ip.ip_konum("1.2.3.4", _istemci(isle))
-    assert s["Ülke"] == "Türkiye" and s["Koordinat"] == "39.9, 32.8"
+    info = domainscan.ip_location("1.2.3.4", _client(handler))
+    assert info["Country"] == "Turkey" and info["Coordinates"] == "39.9, 32.8"
 
 
-def test_ip_konum_hata():
-    hatali = lambda r: httpx.Response(200, json={"status": "fail", "message": "private range"})
+def test_ip_location_error():
+    failing = lambda r: httpx.Response(200, json={"status": "fail", "message": "private range"})
     with pytest.raises(RuntimeError, match="private range"):
-        alan_ip.ip_konum("10.0.0.1", _istemci(hatali))
+        domainscan.ip_location("10.0.0.1", _client(failing))
 
 
-class _SahteCozucu:
-    """dns.resolver.Resolver yerine geçer."""
+class FakeResolver:
+    """Stands in for dns.resolver.Resolver."""
 
     def __init__(self):
         self.lifetime = 0
 
-    def resolve(self, ad, tur):
-        if str(ad) == "yok.test":
+    def resolve(self, name, rtype):
+        if str(name) == "missing.test":
             raise dns.resolver.NXDOMAIN()
-        if tur == "A":
+        if rtype == "A":
             return [type("R", (), {"to_text": lambda s: "9.9.9.9"})(),
                     type("R", (), {"to_text": lambda s: "1.1.1.1"})()]
         raise dns.resolver.NoAnswer()
 
 
-def test_dns_sorgula_sahte(monkeypatch):
-    monkeypatch.setattr(alan_ip.dns.resolver, "Resolver", _SahteCozucu)
-    s = alan_ip.dns_sorgula("ornek.test")
-    assert s["A"] == ["1.1.1.1", "9.9.9.9"]  # sıralı
-    assert s["MX"] == [] and set(s) == set(alan_ip.DNS_TURLERI)
+def test_dns_lookup_with_fake_resolver(monkeypatch):
+    monkeypatch.setattr(domainscan.dns.resolver, "Resolver", FakeResolver)
+    out = domainscan.dns_lookup("example.test")
+    assert out["A"] == ["1.1.1.1", "9.9.9.9"]  # sorted
+    assert out["MX"] == [] and set(out) == set(domainscan.DNS_TYPES)
     with pytest.raises(ValueError, match="NXDOMAIN"):
-        alan_ip.dns_sorgula("yok.test")
+        domainscan.dns_lookup("missing.test")
+
+
+def test_scan_ip_builds_sections(monkeypatch):
+    monkeypatch.setattr(domainscan, "reverse_dns", lambda ip: ["host.example.net"])
+    monkeypatch.setattr(domainscan, "ip_location", lambda ip: {"Country": "Turkey"})
+    steps = []
+    result = domainscan.scan("8.8.8.8", on_step=steps.append)
+    assert list(result.sections) == ["Reverse DNS", "Geolocation"]
+    assert result.sections["Reverse DNS"]["items"] == ["host.example.net"]
+    assert steps == ["Reverse DNS", "Geolocation"]
+
+
+def test_scan_failed_step_becomes_text_and_others_still_run(monkeypatch):
+    def broken(domain):
+        raise RuntimeError("whois down")
+
+    monkeypatch.setattr(domainscan, "whois_lookup", broken)
+    monkeypatch.setattr(domainscan, "dns_lookup", lambda d: {"A": ["1.2.3.4"]})
+    monkeypatch.setattr(domainscan, "crtsh_lookup", lambda d: ["www.example.com"])
+    result = domainscan.scan("https://Example.com/x")
+    assert result.target == "example.com"
+    assert "whois down" in result.sections["Whois"]["text"]
+    assert result.sections["DNS records"]["type"] == "table"
+    assert result.sections["Subdomains (crt.sh)"]["items"] == ["www.example.com"]
+
+
+def test_scan_rejects_invalid_target():
+    with pytest.raises(ValueError):
+        domainscan.scan("not a domain")
