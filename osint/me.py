@@ -269,3 +269,83 @@ def build_result(f: Facts, parts: dict, now: datetime | None = None) -> "ScanRes
     for part in parts.values():
         res.cancelled = res.cancelled or part.cancelled
     return res
+
+
+def classify_identifier(token: str) -> str:
+    """'email', 'phone' or 'username' for a free-form token."""
+    from .emailscan import email_valid
+
+    t = token.strip()
+    if "@" in t:
+        return "email" if email_valid(t) else "invalid"
+    digits = t.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+    if t.startswith("+") and digits[1:].isdigit() or (digits.isdigit() and len(digits) >= 7):
+        return "phone"
+    from .username import username_valid
+
+    return "username" if username_valid(t) else "invalid"
+
+
+def run(
+    *,
+    username: str = "",
+    email: str = "",
+    phone: str = "",
+    region: str = "TR",
+    pw: str | None = None,
+    sites=None,
+    console=None,
+    progress: bool = True,
+    github_lookup=None,
+) -> "ScanResult":
+    """Run every relevant scan for the given identifiers and build the audit.
+
+    ``pw`` (optional) is checked against Pwned Passwords and then dropped; only the
+    count is kept. Failures of single steps are noted, not fatal.
+    """
+    from . import github, password, phone as phone_mod, runner
+    from .ui import info
+
+    f = Facts(username=username, email=email, phone=phone)
+    parts: dict = {}
+    notes: list[str] = []
+
+    if username:
+        parts["username"] = runner.run_username(username, sites, console, progress=progress, print_hits=progress)
+        facts_from_username(parts["username"], f)
+    if email and not (parts.get("username") and parts["username"].cancelled):
+        parts["email"] = runner.run_email(email, console, progress=progress)
+        facts_from_email(parts["email"], f)
+    if phone:
+        try:
+            parts["phone"] = phone_mod.analyze(phone, region.upper())
+        except phone_mod.PhoneError as e:
+            notes.append(f"Phone not analyzed: {e}")
+            f.phone = ""
+    if pw:
+        if progress:
+            info(console, "checking the password (only 5 hash characters leave this machine) ...")
+        try:
+            f.password_count = password.check(pw)
+        except password.PasswordError as e:
+            notes.append(f"Password not checked: {e}")
+        pw = None
+
+    login = ""
+    if "GitHub" in f.username_accounts:
+        login = username
+    elif "email" in parts:
+        gh = parts["email"].sections.get("Profiles", {}).get("items", {}).get("GitHub", "")
+        login = gh.split(" ")[0] if gh else ""
+    if login:
+        if progress:
+            info(console, f"reading public GitHub activity of {login} for exposed commit emails ...")
+        try:
+            parts["github"] = (github_lookup or github.analyze)(login)
+            f.git_emails = list(parts["github"].meta.get("emails", []))
+        except github.GitHubError as e:
+            notes.append(f"GitHub commit emails not checked: {e}")
+
+    result = build_result(f, parts)
+    result.notes.extend(notes)
+    return result
