@@ -56,7 +56,7 @@ class OsintTui(App):
     .satir Input { width: 1fr; }
     .satir Button { margin-left: 1; }
     .satir Switch { margin-left: 2; }
-    .satir .etiket { margin-left: 1; padding-top: 1; }
+    .satir .etiket { width: auto; margin-left: 2; padding-top: 1; }
     .durum { height: auto; min-height: 1; padding: 0 2; color: $text-muted; }
     .durum.hata { color: $error; text-style: bold; }
     .durum.tamam { color: $success; }
@@ -67,8 +67,9 @@ class OsintTui(App):
     """
 
     BINDINGS = [
-        Binding("q", "quit", "Çıkış"),
-        Binding("ctrl+q", "quit", "Çıkış", show=False, priority=True),
+        # Giriş kutusunda 'q' harf olarak yazılır; bu yüzden Ctrl+Q de var (altbilgide o görünür).
+        Binding("q", "quit", "Çıkış", show=False),
+        Binding("ctrl+q", "quit", "Çıkış (q)", priority=True),
         Binding("f1", "sekme('kadi')", "Kullanıcı adı"),
         Binding("f2", "sekme('eposta')", "E-posta"),
         Binding("f3", "sekme('alan')", "Alan adı/IP"),
