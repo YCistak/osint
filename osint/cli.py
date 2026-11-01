@@ -85,35 +85,13 @@ def one_shot(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
     else:
-        # username hits were already printed live; avoid printing them twice
-        if result.kind == "username":
-            result_for_render = result
-            render_summary(console, result_for_render, show)
-        else:
-            render_result(console, result, show)
+        # username hits were already printed live; show only the totals
+        render_result(console, result, show, streamed=result.kind == "username")
 
     if args.save is not None:
         path = report.save_report(result, args.save or None)
         info(errors if args.json else console, f"report saved: {path}")
     return 130 if result.cancelled else 0
-
-
-def render_summary(console, result, show: str) -> None:
-    """Username one-shot: hits were streamed live, so print only the totals."""
-    from .models import FOUND, MISSING, UNKNOWN
-    from .ui import marker
-
-    counts = result.counts()
-    console.print()
-    info(
-        console,
-        f"{len(result.hits)} sites checked: [green]{counts[FOUND]} found[/], "
-        f"{counts[MISSING]} not found, [yellow]{counts[UNKNOWN]} unknown[/]"
-        + ("  [dim](cancelled)[/]" if result.cancelled else ""),
-    )
-    if counts[UNKNOWN] and show == "found":
-        console.print(marker(UNKNOWN), f"{counts[UNKNOWN]} sites could not be checked "
-                                       "(blocked, rate limited or timeout); use --show-all to list them.")
 
 
 def main(argv: list[str] | None = None) -> int:

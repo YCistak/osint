@@ -118,17 +118,21 @@ def render_section(console: Console, title: str, body: dict) -> None:
         console.print(Text("    " + body.get("text", ""), style="dim"))
 
 
-def render_result(console: Console, result: ScanResult, show: str = "found") -> None:
+def render_result(console: Console, result: ScanResult, show: str = "found",
+                  *, streamed: bool = False) -> None:
     """Print a finished (or re-displayed) result.
 
     ``show`` is "found" (default) or "all" (also not-found and unknown sites).
+    ``streamed`` means the site lines were already printed live, so only the
+    totals are shown.
     """
     if result.hits and result.kind == "username":
         counts = result.counts()
         wanted = {FOUND} if show == "found" else {FOUND, MISSING, UNKNOWN}
-        for hit in sorted(result.hits, key=lambda h: (h.status != FOUND, h.name.lower())):
-            if hit.status in wanted:
-                console.print(hit_line(hit))
+        if not streamed:
+            for hit in sorted(result.hits, key=lambda h: (h.status != FOUND, h.name.lower())):
+                if hit.status in wanted:
+                    console.print(hit_line(hit))
         console.print()
         info(
             console,
@@ -138,7 +142,7 @@ def render_result(console: Console, result: ScanResult, show: str = "found") -> 
             + ("  [dim](cancelled)[/]" if result.cancelled else ""),
         )
         if counts[UNKNOWN] and show == "found":
-            console.print(marker(UNKNOWN), f"{counts[UNKNOWN]} sites could not be checked (blocked, rate limited or timeout); 'show all' lists them.")
+            console.print(marker(UNKNOWN), f"{counts[UNKNOWN]} sites could not be checked (blocked, rate limited or timeout); list them with --show-all or 'show all'.")
     for title, body in result.sections.items():
         render_section(console, title, body)
     if result.cancelled and not result.hits:
