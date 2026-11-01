@@ -6,7 +6,7 @@ import argparse
 import json
 import sys
 
-from . import __version__, domainscan, emailscan, image, phone, report, repl, runner, username
+from . import __version__, domainscan, emailscan, image, net, phone, report, repl, runner, username
 from .banner import print_banner
 from .sites import SiteListError, load_sites
 from .ui import error, info, make_console, render_chain_summary, render_result
@@ -19,6 +19,11 @@ def build_parser() -> argparse.ArgumentParser:
     common.add_argument("--save", nargs="?", const="", metavar="PATH",
                         help="also save a report: Markdown, or HTML for a .html path (default folder: ./reports/)")
     common.add_argument("--html", action="store_true", help="with --save: write a single-file HTML report")
+
+    common.add_argument("--proxy", metavar="URL", default=argparse.SUPPRESS,
+                        help="route HTTP traffic through a proxy (http, https, socks5, socks5h); env OSINT_PROXY")
+    common.add_argument("--tor", action="store_true", default=argparse.SUPPRESS,
+                        help=f"shortcut for --proxy {net.TOR_PROXY}; checks that Tor is really used")
 
     parser = argparse.ArgumentParser(
         prog="osint",
@@ -56,10 +61,36 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def setup_network(args: argparse.Namespace, errors) -> int | None:
+    """Apply --proxy / --tor / OSINT_PROXY. Returns an exit code on failure, else None."""
+    try:
+        if getattr(args, "tor", False):
+            net.set_proxy(net.TOR_PROXY)
+        elif getattr(args, "proxy", None):
+            net.set_proxy(args.proxy)
+        else:
+            net.load_env_proxy()
+    except net.ProxyError as e:
+        error(errors, str(e))
+        return 2
+    if getattr(args, "tor", False):
+        is_tor, message = net.check_tor()
+        if not is_tor:
+            error(errors, message)
+            return 2
+        info(errors, message)
+    elif net.get_proxy():
+        info(errors, f"using proxy {net.describe()}")
+    return None
+
+
 def one_shot(args: argparse.Namespace) -> int:
     quiet = args.json
     console = make_console(quiet=quiet)
     errors = make_console(stderr=True)
+    failed = setup_network(args, errors)
+    if failed is not None:
+        return failed
 
     if args.command == "username":
         if not username.username_valid(args.target):
@@ -143,6 +174,9 @@ def main(argv: list[str] | None = None) -> int:
             return 1
     # no command: interactive shell
     console = make_console()
+    failed = setup_network(args, make_console(stderr=True))
+    if failed is not None:
+        return failed
     try:
         sites = load_sites()
     except SiteListError as e:

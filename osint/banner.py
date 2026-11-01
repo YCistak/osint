@@ -5,7 +5,7 @@ from __future__ import annotations
 from rich.console import Console
 from rich.text import Text
 
-from . import __version__
+from . import __version__, net
 
 # "ANSI Shadow" style block letters spelling OSINT.
 LOGO = [
@@ -44,6 +44,15 @@ def logo_text() -> Text:
 
 
 def subtitle(site_count: int) -> Text:
+    line = _subtitle(site_count)
+    proxy = net.describe()
+    if proxy:
+        line.append(" · ", style="dim")
+        line.append(f"proxy: {proxy}", style="bold magenta")
+    return line
+
+
+def _subtitle(site_count: int) -> Text:
     return Text.assemble(
         (f"v{'.'.join(__version__.split('.')[:2])}", "bold cyan"),
         (" · ", "dim"),
