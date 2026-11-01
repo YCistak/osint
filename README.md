@@ -219,6 +219,11 @@ What goes through the proxy: every HTTP request (username scan, profiles, holehe
 | [Pillow](https://python-pillow.org) | EXIF / GPS reading | Offline |
 | [crt.sh](https://crt.sh) | Subdomains from certificate transparency | Often slow or busy |
 | [ip-api.com](https://ip-api.com) | IP geolocation | Free tier, HTTP only, non-commercial use |
+| [Pwned Passwords](https://haveibeenpwned.com/API/v3#PwnedPasswords) | Password exposure count | Range API, k-anonymity, no key |
+| [Shodan InternetDB](https://internetdb.shodan.io) | Open ports, hostnames, CVEs per IP | Free, no key, passive data |
+| [Wayback Machine CDX API](https://web.archive.org/cdx/search/cdx) | First / last snapshot, months with captures | No key |
+| GitHub REST API | Deep profile, repositories, events, commit emails | `GITHUB_TOKEN` optional (5000 requests/hour instead of 60) |
+| Google Lens, Yandex, Bing, TinEye | Reverse image search | Links only; osint never uploads your image |
 
 Thank you to the maigret maintainers and contributors: the site database is the heart of the username search.
 
@@ -248,7 +253,13 @@ uv pip install --python .venv/bin/python -e ".[test]"
 - Username results are heuristics: a profile page that exists is not proof the account belongs to the person you are looking for, and some sites change their pages without notice.
 - Sites behind bot protection answer "unknown" from some networks.
 - holehe's coverage decays as services change; the dead-module list reflects one network at one point in time.
-- GitHub's unauthenticated search allows 10 requests per minute; crt.sh and ip-api.com may throttle.
+- GitHub's unauthenticated search allows 10 requests per minute and the REST API 60 per hour (a deep scan uses about 9); set `GITHUB_TOKEN` for more. crt.sh and ip-api.com may throttle.
+- Commit emails come from recent public push events and the latest commits of up to 5 own repositories; older history is not read.
+- InternetDB shows what Shodan already knows (not a live scan); listed CVEs are candidates. DKIM selectors are guessed (`default`, `google`, `selector1`, `selector2`, `k1`), so a missing one does not mean DKIM is off. The Wayback count is the number of months with captures, not of snapshots.
+- The TLS probe validates against your system trust store; a certificate that fails validation is reported as an error instead of being parsed.
+- The privacy score only sees what these public sources expose; it cannot see private data, and a "good" score is not proof of safety.
+- Phone exposure is limited to masked recovery hints that holehe modules reveal; there is no phone-number breach lookup.
+- Through Tor many sites block or rate limit exit nodes, so more results will be "unknown".
 
 ## Legal and ethics
 
