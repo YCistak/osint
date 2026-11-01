@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest>=8", "pytest-asyncio>=0.23"]
+test = ["pytest>=8"]
 
 [project.scripts]
 osint = "osint.cli:main"
@@ -32,8 +32,6 @@ packages = ["osint"]
 osint = ["sites.json"]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 addopts = "-m 'not live'"
 markers = ["live: tests that need real network access"]
