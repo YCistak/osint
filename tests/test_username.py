@@ -1,139 +1,230 @@
-"""Kullanıcı adı modülü: liste ayrıştırma, sınıflandırma ve (sahte ağla) tarama."""
+"""Username engine: maigret check types against httpx MockTransport."""
 
-import json
+import asyncio
 
 import httpx
 import pytest
 
-from osint_tui import kullanici_adi as ka
+from osint import username
+from osint.models import FOUND, MISSING, UNKNOWN
+from osint.sites import Site
 
 
-def _liste_yaz(tmp_path, siteler):
-    yol = tmp_path / "s.json"
-    yol.write_text(json.dumps({"siteler": siteler}), encoding="utf-8")
-    return yol
+def site(**kw) -> Site:
+    base = dict(name="Demo", url="https://demo.test/{username}")
+    base.update(kw)
+    return Site(**base)
 
 
-def test_gercek_site_listesi_gecerli():
-    siteler = ka.siteleri_yukle()
-    assert 30 <= len(siteler) <= 60
-    assert all("{}" in s.url for s in siteler)
-    assert len({s.ad for s in siteler}) == len(siteler)
+def client_for(handler) -> httpx.AsyncClient:
+    return httpx.AsyncClient(transport=httpx.MockTransport(handler))
 
 
-def test_liste_ayristirma(tmp_path):
-    yol = _liste_yaz(tmp_path, [
-        {"ad": "A", "url": "https://a.test/{}"},
-        {"ad": "B", "url": "https://b.test/{}", "yontem": "bulunamadi_metni", "metin": "yok",
-         "profil": "https://b.test/u/{}", "yok_kodlari": [400]},
-    ])
-    a, b = ka.siteleri_yukle(yol)
-    assert a.yontem == "durum"
-    assert b.profil_url("ali") == "https://b.test/u/ali"
-    assert b.istek_url("ali") == "https://b.test/ali"
-    assert b.yok_kodlari == (400,)
+def check(s: Site, handler, name="alice", **kw):
+    async def go():
+        async with client_for(handler) as c:
+            return await username.check_site(c, s, name, **kw)
+
+    return asyncio.run(go())
 
 
-@pytest.mark.parametrize("kayit", [
-    {"ad": "X", "url": "https://x.test/"},                       # {} yok
-    {"ad": "X", "url": "https://x.test/{}", "yontem": "sihir"},  # bilinmeyen yöntem
-    {"ad": "X", "url": "https://x.test/{}", "yontem": "bulundu_metni"},  # metin eksik
+# ---- classify ---------------------------------------------------------
+
+@pytest.mark.parametrize("status,expected", [
+    (200, FOUND), (204, FOUND), (404, MISSING), (410, MISSING), (302, MISSING),
+    (429, UNKNOWN), (403, UNKNOWN), (401, UNKNOWN), (500, UNKNOWN), (503, UNKNOWN),
 ])
-def test_liste_hatalari(tmp_path, kayit):
-    with pytest.raises(ka.SiteListesiHatasi):
-        ka.siteleri_yukle(_liste_yaz(tmp_path, [kayit]))
+def test_status_code(status, expected):
+    assert username.classify(site(check_type="status_code"), status, "")[0] == expected
 
 
-def test_liste_mukerrer_ve_bozuk(tmp_path):
-    with pytest.raises(ka.SiteListesiHatasi):
-        ka.siteleri_yukle(_liste_yaz(tmp_path, [
-            {"ad": "A", "url": "https://a/{}"}, {"ad": "A", "url": "https://b/{}"}]))
-    bozuk = tmp_path / "bozuk.json"
-    bozuk.write_text("{degil json", encoding="utf-8")
-    with pytest.raises(ka.SiteListesiHatasi):
-        ka.siteleri_yukle(bozuk)
-    with pytest.raises(ka.SiteListesiHatasi):
-        ka.siteleri_yukle(tmp_path / "yok.json")
+def test_ignore403_treats_403_as_normal_answer():
+    s = site(check_type="status_code", ignore403=True)
+    assert username.classify(s, 403, "")[0] == MISSING
 
 
-def test_siniflandirma_durum():
-    s = ka.Site("A", "https://a/{}")
-    assert ka.siniflandir(s, 200, "")[0] == ka.VAR
-    assert ka.siniflandir(s, 404, "")[0] == ka.YOK
-    assert ka.siniflandir(s, 410, "")[0] == ka.YOK
-    assert ka.siniflandir(s, 403, "")[0] == ka.BELIRSIZ
-    assert ka.siniflandir(s, 429, "")[0] == ka.BELIRSIZ
-    assert ka.siniflandir(s, 503, "")[0] == ka.BELIRSIZ
-    assert ka.siniflandir(s, 302, "")[0] == ka.BELIRSIZ
+def test_message_absence_string_means_missing():
+    s = site(check_type="message", absence=("User not found",))
+    assert username.classify(s, 200, "<p>User not found</p>")[0] == MISSING
+    assert username.classify(s, 200, "<h1>alice</h1>")[0] == FOUND
 
 
-def test_siniflandirma_metin_ve_ek_kod():
-    yok_metni = ka.Site("S", "https://s/{}", "bulunamadi_metni", "bulunamadı")
-    assert ka.siniflandir(yok_metni, 200, "profil bulunamadı!")[0] == ka.YOK
-    assert ka.siniflandir(yok_metni, 200, "merhaba")[0] == ka.VAR
-    var_metni = ka.Site("S", "https://s/{}", "bulundu_metni", '"id"')
-    assert ka.siniflandir(var_metni, 200, '{"id": 1}')[0] == ka.VAR
-    assert ka.siniflandir(var_metni, 200, "[]")[0] == ka.YOK
-    assert ka.siniflandir(var_metni, 404, "")[0] == ka.YOK
-    ek = ka.Site("B", "https://b/{}", yok_kodlari=(400,))
-    assert ka.siniflandir(ek, 400, "")[0] == ka.YOK
+def test_message_presence_string_required_when_given():
+    s = site(check_type="message", presence=("og:title",), absence=("nope",))
+    assert username.classify(s, 200, '<meta property="og:title">')[0] == FOUND
+    assert username.classify(s, 200, "empty page")[0] == MISSING
 
 
-def test_kullanici_adi_dogrulama():
-    assert ka.kullanici_adi_gecerli_mi("torvalds")
-    assert ka.kullanici_adi_gecerli_mi("a.b_c-9")
-    for kotu in ["", "a b", "../etc", "a/b", "x" * 41, "a?b=1"]:
-        assert not ka.kullanici_adi_gecerli_mi(kotu)
+def test_message_absence_wins_over_presence():
+    s = site(check_type="message", presence=("profile",), absence=("deleted",))
+    assert username.classify(s, 200, "profile deleted")[0] == MISSING
 
 
-async def test_tarama_sahte_ag():
-    siteler = [
-        ka.Site("Var", "https://var.test/{}"),
-        ka.Site("Yok", "https://yok.test/{}"),
-        ka.Site("Engel", "https://engel.test/{}"),
-        ka.Site("Koptu", "https://koptu.test/{}"),
-        ka.Site("Zaman", "https://zaman.test/{}"),
-    ]
-
-    def isle(istek: httpx.Request) -> httpx.Response:
-        host = istek.url.host
-        if host == "var.test":
-            return httpx.Response(200, text="ok")
-        if host == "yok.test":
-            return httpx.Response(404)
-        if host == "engel.test":
-            return httpx.Response(403)
-        if host == "zaman.test":
-            raise httpx.ReadTimeout("yavaş", request=istek)
-        raise httpx.ConnectError("kopuk", request=istek)
-
-    gelenler = []
-    async with httpx.AsyncClient(transport=httpx.MockTransport(isle)) as c:
-        sonuclar = await ka.tara("ali", siteler, gelenler.append, client=c)
-    d = {s.site: s for s in sonuclar}
-    assert len(sonuclar) == len(gelenler) == 5
-    assert d["Var"].durum == ka.VAR and d["Var"].url == "https://var.test/ali"
-    assert d["Yok"].durum == ka.YOK
-    assert d["Engel"].durum == ka.BELIRSIZ
-    assert d["Koptu"].durum == ka.BELIRSIZ and "bağlantı" in d["Koptu"].ayrinti
-    assert d["Zaman"].durum == ka.BELIRSIZ and "zaman" in d["Zaman"].ayrinti
+def test_message_site_specific_error_is_unknown():
+    s = site(check_type="message", absence=("x",), errors={"captcha": "Captcha required"})
+    status, detail = username.classify(s, 200, "please solve the captcha")
+    assert status == UNKNOWN and "Captcha" in detail
 
 
-async def test_es_zamanlilik_siniri():
-    import asyncio
+def test_message_generic_bot_wall_is_unknown():
+    s = site(check_type="message", absence=("x",))
+    assert username.classify(s, 200, "<title>Just a moment...</title>")[0] == UNKNOWN
 
-    anlik = 0
-    en_fazla = 0
 
-    async def isle(istek: httpx.Request) -> httpx.Response:
-        nonlocal anlik, en_fazla
-        anlik += 1
-        en_fazla = max(en_fazla, anlik)
-        await asyncio.sleep(0.01)
-        anlik -= 1
+def test_message_works_on_404_pages_too():
+    s = site(check_type="message", presence=("profile",))
+    assert username.classify(s, 404, "profile")[0] == FOUND
+
+
+# ---- check_site -------------------------------------------------------
+
+def test_check_site_status_code_found_and_url():
+    seen = []
+
+    def handler(request):
+        seen.append(str(request.url))
+        return httpx.Response(200)
+
+    hit = check(site(), handler)
+    assert hit.status == FOUND and hit.url == "https://demo.test/alice"
+    assert seen == ["https://demo.test/alice"]
+
+
+def test_check_site_uses_url_probe_but_reports_profile_url():
+    seen = []
+
+    def handler(request):
+        seen.append(str(request.url))
+        return httpx.Response(200, json={"id": 1})
+
+    s = site(url_probe="https://api.demo.test/users/{username}")
+    hit = check(s, handler)
+    assert seen == ["https://api.demo.test/users/alice"]
+    assert hit.url == "https://demo.test/alice"
+
+
+def test_check_site_sends_custom_headers():
+    def handler(request):
+        assert request.headers["x-token"] == "abc"
+        return httpx.Response(200)
+
+    assert check(site(headers={"x-token": "abc"}), handler).status == FOUND
+
+
+def test_response_url_does_not_follow_redirects():
+    def handler(request):
+        if request.url.path == "/alice":
+            return httpx.Response(302, headers={"location": "https://demo.test/404"})
+        return httpx.Response(200)
+
+    hit = check(site(check_type="response_url"), handler)
+    assert hit.status == MISSING  # a redirect means "no such user"
+
+
+def test_status_code_follows_redirects():
+    def handler(request):
+        if request.url.path == "/alice":
+            return httpx.Response(301, headers={"location": "https://demo.test/Alice"})
+        return httpx.Response(200)
+
+    assert check(site(), handler).status == FOUND
+
+
+def test_regex_check_skips_request_for_invalid_name():
+    def handler(request):  # pragma: no cover - must not be called
+        raise AssertionError("request should not be sent")
+
+    s = site(regex_check=r"^[a-z]{3,}$")
+    hit = check(s, handler, name="a1")
+    assert hit.status == MISSING and "not valid" in hit.detail
+
+
+def test_retry_once_on_connection_error_then_success():
+    calls = {"n": 0}
+
+    def handler(request):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise httpx.ConnectError("boom", request=request)
+        return httpx.Response(200)
+
+    hit = check(site(), handler)
+    assert hit.status == FOUND and calls["n"] == 2
+
+
+def test_connection_error_twice_is_unknown():
+    calls = {"n": 0}
+
+    def handler(request):
+        calls["n"] += 1
+        raise httpx.ConnectError("boom", request=request)
+
+    hit = check(site(), handler)
+    assert hit.status == UNKNOWN and calls["n"] == 2 and "ConnectError" in hit.detail
+
+
+def test_timeout_is_unknown():
+    def handler(request):
+        raise httpx.ReadTimeout("slow", request=request)
+
+    assert check(site(), handler).detail == "timeout"
+
+
+def test_username_is_url_encoded():
+    seen = []
+
+    def handler(request):
+        seen.append(request.url.raw_path.decode())
         return httpx.Response(404)
 
-    siteler = [ka.Site(f"S{i}", f"https://s{i}.test/{{}}") for i in range(40)]
-    async with httpx.AsyncClient(transport=httpx.MockTransport(isle)) as c:
-        await ka.tara("ali", siteler, es_zamanli=5, client=c)
-    assert 1 <= en_fazla <= 5
+    check(site(), handler, name="a b/c")
+    assert seen == ["/a%20b%2Fc"]
+
+
+# ---- scan -------------------------------------------------------------
+
+def test_scan_collects_results_and_reports_progress():
+    sites = [site(name=f"S{i}", url=f"https://s{i}.test/{{username}}") for i in range(6)]
+
+    def handler(request):
+        return httpx.Response(200 if request.url.host in ("s1.test", "s3.test") else 404)
+
+    progress = []
+
+    async def go():
+        async with client_for(handler) as c:
+            return await username.scan("alice", sites, None, lambda h, d, t: progress.append((d, t)),
+                                       concurrency=3, client=c)
+
+    hits = asyncio.run(go())
+    assert sorted(h.name for h in hits if h.status == FOUND) == ["S1", "S3"]
+    assert [d for d, _ in progress] == [1, 2, 3, 4, 5, 6] and progress[-1] == (6, 6)
+
+
+def test_scan_keeps_partial_results_when_cancelled():
+    sites = [site(name=f"S{i}", url=f"https://s{i}.test/{{username}}") for i in range(4)]
+
+    async def handler(request):
+        if request.url.host == "s0.test":
+            return httpx.Response(200)
+        await asyncio.sleep(30)
+        return httpx.Response(200)
+
+    async def go():
+        results = []
+        async with client_for(handler) as c:
+            task = asyncio.ensure_future(username.scan("alice", sites, results, client=c))
+            await asyncio.sleep(0.3)
+            task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await task
+        return results
+
+    results = asyncio.run(go())
+    assert [h.name for h in results] == ["S0"]
+
+
+def test_username_valid():
+    assert username.username_valid("torvalds") and username.username_valid("a.b_c-d")
+    assert not username.username_valid("") and not username.username_valid("a b")
+    assert not username.username_valid("x" * 41) and not username.username_valid("../etc")
