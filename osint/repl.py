@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from . import (categories, domainscan, emailscan, github, history, historycmd, image, net, password, phone,
+from . import (categories, domainscan, emailscan, github, history, historycmd, image, me, net, password, phone,
                report, runner, username)
 from .banner import clear_screen, print_banner, print_compact_banner
 from .categories import Category
@@ -63,6 +63,16 @@ def read_secret(prompt: str) -> str:
         return ""
 
 
+def read_line(prompt: str) -> str:
+    """Read a text answer from a real terminal; anything else (pipes, EOF) gives an empty string."""
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        return ""
+    try:
+        return input(prompt)
+    except (EOFError, KeyboardInterrupt):
+        return ""
+
+
 @dataclass
 class Session:
     console: Console
@@ -74,6 +84,7 @@ class Session:
     ask: Callable[[str], str] = field(default=lambda prompt: ask_yes_no(prompt))
     secret: Callable[[str], str] = field(default=lambda prompt: read_secret(prompt))
     variations: bool = False
+    line: Callable[[str], str] = field(default=lambda prompt: read_line(prompt))
 
 
 def set_last(s: Session, result: ScanResult) -> None:
@@ -272,6 +283,49 @@ def cmd_github(s: Session, args: list[str]) -> None:
     except github.GitHubError as e:
         error(s.console, str(e))
         return
+    set_last(s, result)
+    render_result(s.console, result)
+
+
+def cmd_me(s: Session, args: list[str]) -> None:
+    ids: dict[str, str] = {}
+    want_password = False
+    if args == ["ask"] or not args:
+        info(s.console, "privacy self-audit: answer what you want checked, leave the rest empty")
+        for key, label in (("username", "Username"), ("email", "Email address"), ("phone", "Phone number")):
+            value = s.line(f"  {label} (empty to skip): ").strip()
+            if value:
+                ids[key] = value
+        if not ids:
+            error(s.console, "nothing to check: give a username, an email address or a phone number "
+                             "(e.g. me torvalds jane@example.com +905551112233)")
+            return
+        want_password = s.ask("Also check one of your passwords against known breaches? [y/N] ").strip().lower() in ("y", "yes")
+    else:
+        ids, flags, problem = me.parse_args(args)
+        if problem:
+            error(s.console, problem + "   (usage: me <username> <email> <phone> [--password])")
+            return
+        want_password = "password" in flags
+        if not ids.keys() & {"username", "email", "phone"}:
+            error(s.console, "give at least one of: username, email address, phone number")
+            return
+    if ids.get("username") and not username.username_valid(ids["username"]):
+        error(s.console, "invalid username (allowed: letters, digits, '.', '_', '-', max 40 chars)")
+        return
+    if ids.get("email") and not emailscan.email_valid(ids["email"]):
+        error(s.console, "invalid email address")
+        return
+    region = ids.get("region", phone.DEFAULT_REGION).upper()
+    if ids.get("phone") and not phone.region_valid(region):
+        error(s.console, f"unknown region '{region}' (use a 2-letter country code such as TR, US, DE)")
+        return
+    pw = s.secret("Password (hidden, empty to skip): ") if want_password else ""
+    try:
+        result = me.run(username=ids.get("username", ""), email=ids.get("email", ""), phone=ids.get("phone", ""),
+                        region=region, pw=pw or None, sites=s.sites, console=s.console)
+    finally:
+        pw = ""
     set_last(s, result)
     render_result(s.console, result)
 
@@ -484,6 +538,12 @@ categories.register(Category(
 categories.register(Category(
     key="github", label="GitHub", summary="profile, repos, activity, emails in commits",
     target="<username>", example="torvalds", run=cmd_github))
+categories.register(Category(
+    key="me", label="Me", summary="privacy self-audit with a 0-100 score",
+    target="<username|email|phone ...>", example="torvalds jane@example.com +905551112233", run=cmd_me,
+    flags=("--password", "--region"), aliases=("audit",), cli_usage="me <username> <email> <phone>",
+    extra_help=(("ask", "get prompted for each identifier"),
+                ("--password", "also check a password (hidden prompt)"))))
 categories.register(Category(
     key="password", label="Password", summary="check a password against known breaches",
     target="(hidden prompt)", example="type it, nothing is echoed or saved", run=cmd_password,

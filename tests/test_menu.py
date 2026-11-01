@@ -31,7 +31,7 @@ def last_screen(buf):
 
 def test_registry_order_and_menu_rows():
     keys = [c.key for c in categories.REGISTRY]
-    assert keys == ["username", "email", "domain", "phone", "image", "github", "password"]
+    assert keys == ["username", "email", "domain", "phone", "image", "github", "me", "password"]
     rows = categories.menu_rows(500)
     assert rows[0] == ("1", "Username", "search a username on 500 sites")
     assert rows[-1] == ("0", "Exit", "")
