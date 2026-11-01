@@ -25,6 +25,7 @@ class Category:
     path_target: bool = False  # the target is a file path (enables path completion)
     aliases: tuple[str, ...] = ()
     cli_usage: str = ""  # usage shown by the global command; defaults to "key target"
+    secret: bool = False  # input is a secret: hidden prompt, never echoed, never put in history
 
     def usage(self) -> str:
         return self.cli_usage or f"{self.key} {self.target}"
