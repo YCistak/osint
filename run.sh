@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# osint-tui başlatıcı: sanal ortamı (.venv) kurar/kullanır ve uygulamayı açar.
+# osint launcher: creates/uses the .venv virtual environment and starts the tool.
 set -e
 cd "$(dirname "$(readlink -f "$0")")"
 
-if [ ! -x .venv/bin/osint-tui ]; then
-    echo "İlk kurulum yapılıyor (.venv)…"
+if [ ! -x .venv/bin/osint ]; then
+    echo "[*] First run: setting up .venv ..."
     if command -v uv >/dev/null 2>&1; then
         uv venv .venv
         uv pip install --python .venv/bin/python -e .
@@ -14,4 +14,4 @@ if [ ! -x .venv/bin/osint-tui ]; then
     fi
 fi
 
-exec .venv/bin/osint-tui "$@"
+exec .venv/bin/osint "$@"

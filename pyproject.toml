@@ -3,34 +3,37 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "osint-tui"
-version = "0.1.0"
-description = "Kişisel dijital iz denetimi ve CTF öğrenimi için terminal arayüzlü OSINT aracı"
+name = "osint"
+version = "0.2.0"
+description = "Terminal OSINT toolkit: username search across 500+ sites, email and domain recon"
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = [
-    "textual>=0.80",
     "httpx>=0.27",
     "dnspython>=2.4",
     "python-whois>=0.9",
     "holehe>=1.61",
+    "requests>=2.31",
+    "rich>=13.7",
+    "prompt_toolkit>=3.0.43",
 ]
 
 [project.optional-dependencies]
 test = ["pytest>=8", "pytest-asyncio>=0.23"]
 
 [project.scripts]
-osint-tui = "osint_tui.app:main"
+osint = "osint.cli:main"
 
 [tool.setuptools]
-packages = ["osint_tui"]
+packages = ["osint"]
 
 [tool.setuptools.package-data]
-osint_tui = ["siteler.json"]
+osint = ["sites.json"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
-addopts = "-m 'not canli'"
-markers = ["canli: gerçek ağ erişimi gerektiren duman (smoke) testleri"]
+addopts = "-m 'not live'"
+markers = ["live: tests that need real network access"]
