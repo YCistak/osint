@@ -144,6 +144,49 @@ osint --no-banner                       # shell without the banner
 
 Exit codes: `0` ok, `1` service problem, `2` invalid input, `130` scan cancelled.
 
+### Privacy score
+
+`me` starts at 100 and subtracts points for what it finds. Only the inputs you give are counted, and the result table lists every factor with what was found and the points taken, so the number is never a black box.
+
+| Factor | Points taken |
+|---|---|
+| Accounts found for the username | 1 per 2 accounts, max 15 |
+| Services registered with the email (holehe) | 1 per 3 services, max 10 |
+| Data breaches (XposedOrNot) | 4 per breach, max 28 |
+| Passwords exposed in any breach | 8 |
+| A breach in the last 2 years | 4 |
+| Sensitive profile fields (location, company, public email), across all found profiles | 3 per field, max 12 |
+| Email linked to a public profile (Gravatar or GitHub) | 5 |
+| A service reveals a (masked) phone number in its recovery hints | 5 |
+| Real email address in public git commits (GitHub) | 6 |
+| The password you checked appears in breaches | 10 |
+
+`score = max(0, 100 - sum of points)`. Labels: 80-100 **good**, 50-79 **fair**, 0-49 **poor**. The score is a heuristic for comparing yourself over time (use `history diff`), not a security guarantee: a clean result only means nothing public was found by these sources.
+
+Recommendations are generated from the findings, for example "Change passwords for services in these breaches: ...", "Remove location from your GitHub profile.", "Enable 'Keep my email addresses private' ...", "Enable two-factor authentication (2FA) ...".
+
+### Password privacy
+
+The `password` command uses the Pwned Passwords range API with **k-anonymity**: the password is hashed locally with SHA-1 and only the **first 5 hex characters** are sent to `https://api.pwnedpasswords.com/range/<prefix>` (with `Add-Padding: true`). The service returns every known suffix for that prefix and the match happens on your machine.
+
+Guarantees, each covered by tests:
+
+- The password is read from a hidden prompt (`getpass` / prompt_toolkit password mode) or from stdin (`echo pw | osint password --stdin`). Passing it as an argument still works but prints a warning, because shells keep it in their history.
+- It is never echoed, never written to the prompt history file (lines such as `password secret` are dropped, and the category prompt uses a history-less session), never put in a report, JSON output or the scan history database, and never logged. Password results cannot be saved (`save` and `--save` refuse).
+- The result only contains how many times the password was seen and a local strength hint. Neither the password nor its hash appears in it.
+
+### Proxy and Tor
+
+```bash
+osint --proxy socks5h://127.0.0.1:9050 username jane   # http, https, socks5, socks5h
+osint --tor email jane@example.com                     # same as socks5h://127.0.0.1:9050, plus an IsTor check
+export OSINT_PROXY=http://127.0.0.1:8080               # default for every run
+```
+
+In the shell: `proxy socks5h://127.0.0.1:9050`, `proxy tor` (checks `https://check.torproject.org/api/ip` and refuses if you are not on Tor), `proxy off`, `proxy` (shows the state). The active proxy is shown in the banner line. Passwords in proxy URLs are hidden when printed.
+
+What goes through the proxy: every HTTP request (username scan, profiles, holehe account checks, breach lookups, GitHub, crt.sh, ip-api, InternetDB, Wayback, Pwned Passwords, image downloads). What does **not**: DNS lookups (dnspython: DNS records, MX, SPF/DMARC/DKIM), whois, and the TLS certificate probe use direct sockets, so a warning is printed in those results. With `socks5h` the proxy resolves host names for HTTP requests; the direct DNS queries above still reveal the domain you ask about to your resolver.
+
 ### Email output
 
 ```text
