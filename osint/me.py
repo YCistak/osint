@@ -349,3 +349,29 @@ def run(
     result = build_result(f, parts)
     result.notes.extend(notes)
     return result
+
+
+def parse_args(args: list[str]) -> tuple[dict[str, str], set[str], str]:
+    """Parse REPL arguments: ``--username X --email Y --phone Z --region XX --password`` and free
+    tokens (classified by shape). Returns ``(identifiers, flags, problem)``."""
+    ids: dict[str, str] = {}
+    flags: set[str] = set()
+    it = iter(args)
+    for a in it:
+        if a in ("--username", "--email", "--phone", "--region"):
+            value = next(it, "")
+            if not value:
+                return ids, flags, f"{a} needs a value"
+            ids[a[2:]] = value
+        elif a in ("--password", "--check-password"):
+            flags.add("password")
+        elif a.startswith("--"):
+            return ids, flags, f"unknown flag: {a}"
+        else:
+            kind = classify_identifier(a)
+            if kind == "invalid":
+                return ids, flags, f"'{a}' is not a valid username, email address or phone number"
+            if kind in ids:
+                return ids, flags, f"more than one {kind} given"
+            ids[kind] = a
+    return ids, flags, ""
