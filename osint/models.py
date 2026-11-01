@@ -87,3 +87,8 @@ def bullets(items: list[str]) -> dict:
 
 def text(message: str) -> dict:
     return {"type": "text", "text": message}
+
+
+def steps(items: list[str]) -> dict:
+    """Numbered sentences (recommendations)."""
+    return {"type": "steps", "items": [str(i) for i in items]}
